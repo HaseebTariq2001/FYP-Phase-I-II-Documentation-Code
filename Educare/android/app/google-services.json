@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "898588690672",
+    "project_id": "educare-943f7",
+    "storage_bucket": "educare-943f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898588690672:android:fcf66a59351be133149a35",
+        "android_client_info": {
+          "package_name": "com.example.educare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "898588690672-a875rku2jeb0eqvm7uq0f9t9ll81ddll.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.educare",
+            "certificate_hash": "141420015ed6a51ceb452be228e9f37260e306eb"
+          }
+        },
+        {
+          "client_id": "898588690672-rdhhdb47i2p5pgqk7ls6k758r2fa69j6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_TOz_Bfl7iD0rf1xxxMmEiLJFRGPdRrM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "898588690672-rdhhdb47i2p5pgqk7ls6k758r2fa69j6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
