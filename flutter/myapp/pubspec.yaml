@@ -71,6 +71,10 @@ flutter:
     - assets/logo_pic.png
     - assets/child_profile.png
     - assets/animations/Analyzing.json
+    - assets/children-profile.svg
+    - assets/Setting.svg
+    - assets/progress_report.svg
+    - assets/logout.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

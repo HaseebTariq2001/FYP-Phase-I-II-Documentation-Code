@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'child_profile_screen.dart'; // Import Child Profile Setup Page
-import 'chat_screen.dart'; // Import Chatbot Screen
+import 'home_screen.dart'; // Import Chatbot Screen
 
 class AddChildProfileScreen extends StatelessWidget {
   const AddChildProfileScreen({super.key});
@@ -12,16 +12,11 @@ class AddChildProfileScreen extends StatelessWidget {
         children: [
           // Background Image
           Positioned.fill(
-            child: Image.asset(
-              "assets/background.png",
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset("assets/background.png", fit: BoxFit.cover),
           ),
 
           // Semi-transparent overlay
-          Container(
-            color: Colors.blue.withOpacity(0.3),
-          ),
+          Container(color: Colors.blue.withOpacity(0.3)),
 
           SafeArea(
             child: Column(
@@ -36,7 +31,9 @@ class AddChildProfileScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => ChatScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => HomeScreen(),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -44,7 +41,10 @@ class AddChildProfileScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                         ),
                         child: Text(
                           "Skip",
@@ -60,12 +60,8 @@ class AddChildProfileScreen extends StatelessWidget {
                 ),
 
                 SizedBox(height: 20), // Space below Skip button
-
                 // Logo
-                Image.asset(
-                  "assets/child_profile.png",
-                  width: 200,
-                ),
+                Image.asset("assets/child_profile.png", width: 200),
 
                 SizedBox(height: 50),
 
@@ -86,7 +82,9 @@ class AddChildProfileScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ChildProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => ChildProfileScreen(),
+                      ),
                     );
                   },
                   child: CircleAvatar(
@@ -101,7 +99,6 @@ class AddChildProfileScreen extends StatelessWidget {
                 ),
 
                 Spacer(), // Push logout button to the bottom
-
                 // Logout Button (Centered at the Bottom)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
@@ -112,7 +109,10 @@ class AddChildProfileScreen extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade900,
-                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -138,10 +138,7 @@ class AddChildProfileScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            "Logout",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          title: Text("Logout", style: TextStyle(fontWeight: FontWeight.bold)),
           content: Text("Are you sure you want to logout?"),
           actions: [
             TextButton(
@@ -151,9 +148,18 @@ class AddChildProfileScreen extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Close dialog
-                Navigator.pushReplacementNamed(context, "/login"); // Navigate to Login Screen
+                Navigator.pushReplacementNamed(
+                  context,
+                  "/login",
+                ); // Navigate to Login Screen
               },
-              child: Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              child: Text(
+                "Logout",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );

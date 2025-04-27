@@ -6,6 +6,7 @@ class AppHeader extends StatelessWidget {
   final bool showMenu;
   final bool showParent;
   final bool showBack;
+  final VoidCallback? onMenuTap; // 👈 Callback for menu icon
 
   const AppHeader({
     super.key,
@@ -13,6 +14,7 @@ class AppHeader extends StatelessWidget {
     this.showMenu = false,
     this.showParent = false,
     this.showBack = false,
+    this.onMenuTap,
   });
 
   @override
@@ -26,33 +28,39 @@ class AppHeader extends StatelessWidget {
           // Left: Back icon+text or Menu icon+text
           showBack
               ? GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Column(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/back_arrow.svg',
-                        height: 35,
-                        width: 40,
-                        colorFilter:
-                            const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                onTap: () => Navigator.pop(context),
+                child: Column(
+                  children: [
+                    SvgPicture.asset(
+                      'assets/back_arrow.svg',
+                      height: 35,
+                      width: 40,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        "Back",
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                )
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      "Back",
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ],
+                ),
+              )
               : (showMenu
-                  ? Column(
+                  ? GestureDetector(
+                    onTap: onMenuTap, // 👈 Open drawer
+                    child: Column(
                       children: [
                         SvgPicture.asset(
                           'assets/bars.svg',
                           height: 35,
                           width: 40,
                           colorFilter: const ColorFilter.mode(
-                              Colors.white, BlendMode.srcIn),
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         const Text(
@@ -60,7 +68,8 @@ class AppHeader extends StatelessWidget {
                           style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                       ],
-                    )
+                    ),
+                  )
                   : const SizedBox(width: 50)),
 
           // Center title
@@ -76,26 +85,26 @@ class AppHeader extends StatelessWidget {
           // Right: Parent icon+text
           showParent
               ? Column(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/user.svg',
-                      height: 35,
-                      width: 40,
-                      colorFilter: const ColorFilter.mode(
-                          Colors.white, BlendMode.srcIn),
+                children: [
+                  SvgPicture.asset(
+                    'assets/user.svg',
+                    height: 35,
+                    width: 40,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      "Parent",
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ],
-                )
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    "Parent",
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              )
               : const SizedBox(width: 50),
         ],
       ),
     );
   }
 }
-
-

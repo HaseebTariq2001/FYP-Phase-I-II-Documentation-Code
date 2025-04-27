@@ -8,6 +8,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+
 android {
     namespace = "com.example.myapp"
     compileSdk = flutter.compileSdkVersion
@@ -37,18 +38,10 @@ android {
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Signing with the debug keys for now, so flutter run --release works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-}
-    dependencies {
-    // Firebase dependencies
-    implementation("com.google.firebase:firebase-auth:21.0.1")  // Firebase Authentication
-    implementation("com.google.android.gms:play-services-auth:20.0.1")  // Google Sign-In
-    implementation("com.google.firebase:firebase-core:20.0.0")  // Firebase Core
-
-    // Other dependencies you may have
 }
 
 flutter {
