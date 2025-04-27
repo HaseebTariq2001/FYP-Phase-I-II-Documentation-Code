@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "743905793671",
+    "project_id": "educare-ae115",
+    "storage_bucket": "educare-ae115.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743905793671:android:b3170049424b305cd84a22",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQAGxIIeaxVuzAI9cPTV4XCrVDM1uyIeg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

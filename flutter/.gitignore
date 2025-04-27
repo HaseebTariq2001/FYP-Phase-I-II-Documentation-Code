@@ -1,0 +1,74 @@
+# Python & Virtual Environments
+venv/
+.env/
+env/
+projectenv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Model Weights & Tokenizers
+*.bin
+*.h5
+*.pt
+*.pth
+*.joblib
+*.onnx
+*.safetensors
+tokenizer.json
+vocab.json
+merges.txt
+*.model
+*.vocab
+
+# Training Data (if large)
+*.csv
+*.tsv
+*.jsonl
+*.tfrecords
+*.pickle
+*.pkl
+
+# Jupyter Notebooks (optional)
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# Build & Distribution
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Logs & Debug Files
+*.log
+*.sqlite
+*.sqlite3
+
+# Environment Variables
+.env.local
+.env.development
+.env.production
+
+# Misc
+*.bak
+*.tmp
+*.temp
