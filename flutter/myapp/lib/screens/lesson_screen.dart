@@ -1,6 +1,3 @@
-// 
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -13,7 +10,7 @@ class LessonScreen extends StatefulWidget {
   final int lessonIndex;
   final int totalLessonCount;
 
-  LessonScreen({
+  const LessonScreen({super.key, 
     required this.phrases,
     required this.title,
     required this.lessonIndex,
@@ -74,30 +71,27 @@ class _LessonScreenState extends State<LessonScreen> {
     }
   }
 
-  void _evaluateResponse() {
-    final input = _sanitizeText(childResponse);
-    final target = _sanitizeText(currentPhrase);
-    double matchPercentage = _calculateMatch(input, target);
+void _evaluateResponse() {
+  final input = _sanitizeText(childResponse);
+  final target = _sanitizeText(currentPhrase);
+  double matchPercentage = _calculateMatch(input, target);
 
-    if (matchPercentage >= 0.9 && !hasPraised) {
-      final selectedPraise = praiseOptions[_random.nextInt(praiseOptions.length)];
-      setState(() {
-        praiseText = selectedPraise['text']!;
-        praiseEmoji = selectedPraise['emoji']!;
-        correctCount++;
-        hasPraised = true;
-      });
-    } else if (matchPercentage < 0.9 && !hasPraised && childResponse.isNotEmpty && praiseText.isEmpty) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Move to the next phrase."),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+  if (matchPercentage >= 0.9 && !hasPraised) {
+    final selectedPraise = praiseOptions[_random.nextInt(praiseOptions.length)];
+    setState(() {
+      praiseText = selectedPraise['text']!;
+      praiseEmoji = selectedPraise['emoji']!;
+      correctCount++;
+      hasPraised = true;
+    });
+  } else if (matchPercentage < 0.9 && childResponse.isNotEmpty && !hasPraised) {
+    setState(() {
+      praiseText = "Try again";
+      praiseEmoji = "👎";
+    });
   }
+}
+
 
   String _sanitizeText(String text) {
     return text.toLowerCase().replaceAll(RegExp(r"[^\w\s]"), "").trim();
@@ -117,70 +111,71 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   void _nextPhrase() {
-    speechToText.stop();
+  speechToText.stop();
 
-    if (childResponse.trim().isEmpty || !hasPraised) {
-      skippedCount++;
-      if (!skippedIndexes.contains(currentIndex)) {
-        skippedIndexes.add(currentIndex);
+  // Only count as skipped if the phrase is empty and not already praised
+  if (childResponse.trim().isEmpty && !hasPraised) {
+    skippedCount++;
+    if (!skippedIndexes.contains(currentIndex)) {
+      skippedIndexes.add(currentIndex);
+    }
+  }
+
+  setState(() {
+    praiseText = "";
+    praiseEmoji = "";
+    childResponse = "";
+    hasPraised = false;
+
+    if (currentIndex < widget.phrases.length - 1) {
+      currentIndex++;
+    } else {
+      if (skippedCount == 0) {
+        _markLessonComplete();
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Lesson Completed!🎉"),
+            content: Text("You got all phrases correct! Activity and next Lesson Unlocked"),
+            actions: [
+              TextButton(
+                child: Text("OK"),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("⚠️ Lesson Not Completed"),
+            content: Text(
+              "You skipped $skippedCount phrase(s).\nPlease correct all phrases to unlock the next lesson.",
+            ),
+            actions: [
+              TextButton(
+                child: Text("Try Again"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    currentIndex = skippedIndexes.first;
+                    skippedCount = 0;
+                    skippedIndexes.clear();
+                    praiseText = "";
+                    praiseEmoji = "";
+                    childResponse = "";
+                    hasPraised = false;
+                  });
+                },
+              )
+            ],
+          ),
+        );
       }
     }
-
-    setState(() {
-      praiseText = "";
-      praiseEmoji = "";
-      childResponse = "";
-      hasPraised = false;
-
-      if (currentIndex < widget.phrases.length - 1) {
-        currentIndex++;
-      } else {
-        if (skippedCount == 0) {
-          _markLessonComplete();
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text("🎉 Lesson Completed!"),
-              content: Text("You got all phrases correct!"),
-              actions: [
-                TextButton(
-                  child: Text("OK"),
-                  onPressed: () => Navigator.pop(context),
-                )
-              ],
-            ),
-          );
-        } else {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text("⚠️ Lesson Not Completed"),
-              content: Text(
-                "You skipped $skippedCount phrase(s).\nPlease correct all phrases to unlock the next lesson.",
-              ),
-              actions: [
-                TextButton(
-                  child: Text("Try Again"),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      currentIndex = skippedIndexes.first;
-                      skippedCount = 0;
-                      skippedIndexes.clear();
-                      praiseText = "";
-                      praiseEmoji = "";
-                      childResponse = "";
-                      hasPraised = false;
-                    });
-                  },
-                )
-              ],
-            ),
-          );
-        }
-      }
-    });
-  }
+  });
+}
 
   void _previousPhrase() {
     speechToText.stop();
@@ -296,23 +291,23 @@ class _LessonScreenState extends State<LessonScreen> {
                       if (currentIndex > 0)
                         ElevatedButton(
                           onPressed: _previousPhrase,
-                          child: Text("Previous Phrase", style: TextStyle(fontSize: 16)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             shape: StadiumBorder(),
                             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                           ),
+                          child: Text("Previous Phrase", style: TextStyle(fontSize: 16)),
                         ),
                       ElevatedButton(
                         onPressed: _nextPhrase,
-                        child: Text("Next Phrase", style: TextStyle(fontSize: 16)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
                           shape: StadiumBorder(),
                           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                         ),
+                        child: Text("Next Phrase", style: TextStyle(fontSize: 16)),
                       ),
                     ],
                   )

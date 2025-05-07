@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'lesson_screen.dart';
 
 class CourseDetailScreen extends StatefulWidget {
+  const CourseDetailScreen({super.key});
+
   @override
   _CourseDetailScreenState createState() => _CourseDetailScreenState();
 }

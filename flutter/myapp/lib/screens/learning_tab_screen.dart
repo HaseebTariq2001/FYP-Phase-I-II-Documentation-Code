@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class LearningTabScreen extends StatelessWidget {
+  const LearningTabScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(

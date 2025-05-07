@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'activity_screen.dart';
 
 class ActivityDetailScreen extends StatefulWidget {
+  const ActivityDetailScreen({super.key});
+
   @override
   _ActivityDetailScreenState createState() => _ActivityDetailScreenState();
 }
