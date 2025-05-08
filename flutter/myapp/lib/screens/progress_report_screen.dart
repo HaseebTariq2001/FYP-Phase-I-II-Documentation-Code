@@ -570,9 +570,10 @@ class _ProgressReportScreenState extends State<ProgressReportScreen> {
 
   Future<void> loadScores() async {
     Map<String, String> loaded = {};
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final ref = FirebaseDatabase.instance.ref("users/$uid/progress");
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
 
+    final ref = FirebaseDatabase.instance.ref("users/$uid/progress");
     final snapshot = await ref.get();
     final data = snapshot.value as Map<dynamic, dynamic>?;
 

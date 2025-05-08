@@ -390,8 +390,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
       'status': isCorrect ? 'Correct' : 'Incorrect',
     });
 
-    await _saveProgress();
-    _showResultDialog();
+    try {
+      await _saveProgress();
+    } catch (e) {
+      _showSnackbar("Failed to save progress: $e");
+    }
+
+    if (!mounted) return;
+    await _showResultDialog();
+    if (mounted) Navigator.of(context).pop();
   }
 
   String _sanitizeText(String text) {
@@ -426,11 +433,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
     });
   }
 
-  void _showResultDialog() {
+  Future<void> _showResultDialog() async {
     int correct = responses.where((r) => r['status'] == 'Correct').length;
     int total = widget.phrases.length;
 
-    showDialog(
+    return showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Activity Completed!"),
@@ -471,11 +478,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         actions: [
           TextButton(
             child: Text("Done"),
-            onPressed: () {
-              Navigator.of(context)
-                ..pop()
-                ..pop();
-            },
+            onPressed: () => Navigator.of(context).pop(),
           )
         ],
       ),
