@@ -1,9 +1,13 @@
+// ignore_for_file: unused_field
+
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'Learning and lesson/child_dashboard_screen.dart';
 import 'create_account_screen.dart';
-import 'add_child_profile_screen.dart'; // <-- assumed screen
-// Removed home_screen.dart and child_dashboard.dart imports
+import 'add_child_profile_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +20,8 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _childNameController =
+      TextEditingController(); // 🔧 Controller for child name
   final _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _obscureText = true;
@@ -46,28 +52,76 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email first.")),
+      );
+      return;
+    }
+
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Password reset link sent to your email."),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    }
+  }
+
   Future<void> _loginUser() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+        if (isParent) {
+          // 🔵 Parent login via Firebase
+          await _auth.signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Login Successful!"),
-            backgroundColor: Colors.green,
-          ),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Login Successful!"),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-        // Redirect to child profile creation
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const AddChildProfileScreen(),
-          ),
-        );
+          // ✅ Redirect to AddChildProfileScreen for parent
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddChildProfileScreen(),
+            ),
+          );
+        } else {
+          // 🔴 Child login - verify with local DB using name
+          bool childExists = await _verifyChildLoginLocally(
+            _childNameController.text.trim(), // 🔧 Use name not email
+            _passwordController.text.trim(),
+          );
+
+          if (childExists) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Child Login Successful!"),
+                backgroundColor: Colors.green,
+              ),
+            );
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => LearningTabScreen()),
+            );
+          } else {
+            throw Exception("Invalid child credentials");
+          }
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -76,6 +130,28 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         );
       }
+    }
+  }
+
+  Future<bool> _verifyChildLoginLocally(String name, String password) async {
+    final url = Uri.parse('http://192.168.1.6:8000/api/verify_child_login');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'name': name, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error verifying child login: $e');
+      return false;
     }
   }
 
@@ -101,7 +177,6 @@ class _LoginScreenState extends State<LoginScreen>
         ),
       );
 
-      // Redirect to child profile creation
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AddChildProfileScreen()),
@@ -119,67 +194,250 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void dispose() {
     _emailController.dispose();
+    _childNameController.dispose(); // 🔧 Dispose child name controller
     _passwordController.dispose();
     _controller.dispose();
     super.dispose();
   }
 
+  //   @override
+  //   Widget build(BuildContext context) {
+  //     return Scaffold(
+  //       backgroundColor: const Color(0xFF7BDAEB),
+  //       body: SafeArea(
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             const Text(
+  //               "Welcome to EduCare",
+  //               style: TextStyle(
+  //                 fontSize: 26,
+  //                 fontWeight: FontWeight.bold,
+  //                 color: Color(0xFF2C3E50),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 20),
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 IconButton(
+  //                   icon: Icon(
+  //                     Icons.person,
+  //                     color: isParent ? Colors.blue : Colors.grey,
+  //                     size: 32,
+  //                   ),
+  //                   onPressed: () => _toggleUserType(true),
+  //                 ),
+  //                 const SizedBox(width: 20),
+  //                 IconButton(
+  //                   icon: Icon(
+  //                     Icons.child_care,
+  //                     color: !isParent ? Colors.black : Colors.grey,
+  //                     size: 32,
+  //                   ),
+  //                   onPressed: () => _toggleUserType(false),
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 20),
+  //             AnimatedBuilder(
+  //               animation: _controller,
+  //               builder: (context, child) {
+  //                 final isFront = _controller.value < 0.5;
+  //                 final angle =
+  //                     isFront
+  //                         ? _controller.value * 3.14
+  //                         : (1 - _controller.value) * 3.14;
+  //                 return Transform(
+  //                   alignment: Alignment.center,
+  //                   transform: Matrix4.rotationY(angle),
+  //                   child: _buildLoginCard(),
+  //                 );
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   }
+
+  //   Widget _buildLoginCard() {
+  //     return Card(
+  //       margin: const EdgeInsets.symmetric(horizontal: 30),
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+  //       elevation: 8,
+  //       color: Colors.white,
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(24.0),
+  //         child: Form(
+  //           key: _formKey,
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               isParent
+  //                   ? TextFormField(
+  //                     controller: _emailController,
+  //                     decoration: const InputDecoration(labelText: 'Email'),
+  //                     validator:
+  //                         (value) => value!.isEmpty ? 'Enter your email' : null,
+  //                   )
+  //                   : TextFormField(
+  //                     controller: _childNameController,
+  //                     decoration: const InputDecoration(labelText: 'Child Name'),
+  //                     validator:
+  //                         (value) => value!.isEmpty ? 'Enter child name' : null,
+  //                   ),
+  //               const SizedBox(height: 10),
+  //               TextFormField(
+  //                 controller: _passwordController,
+  //                 obscureText: _obscureText,
+  //                 decoration: InputDecoration(
+  //                   labelText: 'Password',
+  //                   suffixIcon: IconButton(
+  //                     icon: Icon(
+  //                       _obscureText ? Icons.visibility_off : Icons.visibility,
+  //                     ),
+  //                     onPressed: () {
+  //                       setState(() {
+  //                         _obscureText = !_obscureText;
+  //                       });
+  //                     },
+  //                   ),
+  //                 ),
+  //                 validator:
+  //                     (value) => value!.isEmpty ? 'Enter your password' : null,
+  //               ),
+  //               const SizedBox(height: 10),
+
+  //               // 🔵 Forgot password for parent only
+  //               if (isParent)
+  //                 Align(
+  //                   alignment: Alignment.centerRight,
+  //                   child: TextButton(
+  //                     onPressed: _resetPassword,
+  //                     child: const Text(
+  //                       "Forgot Password?",
+  //                       style: TextStyle(color: Colors.blue),
+  //                     ),
+  //                   ),
+  //                 ),
+
+  //               const SizedBox(height: 10),
+  //               ElevatedButton(
+  //                 onPressed: _loginUser,
+  //                 style: ElevatedButton.styleFrom(
+  //                   backgroundColor: const Color(0xFF3498DB),
+  //                   foregroundColor: Colors.white,
+  //                   padding: const EdgeInsets.symmetric(
+  //                     horizontal: 40,
+  //                     vertical: 14,
+  //                   ),
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                   ),
+  //                 ),
+  //                 child: const Text("Login"),
+  //               ),
+  //               if (isParent) ...[
+  //                 const SizedBox(height: 10),
+  //                 ElevatedButton.icon(
+  //                   onPressed: _signInWithGoogle,
+  //                   icon: const Icon(Icons.g_mobiledata),
+  //                   label: const Text("Sign in with Google"),
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: Colors.white,
+  //                     foregroundColor: Colors.black,
+  //                     elevation: 3,
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(12),
+  //                       side: const BorderSide(color: Colors.grey),
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 TextButton(
+  //                   onPressed:
+  //                       () => Navigator.push(
+  //                         context,
+  //                         MaterialPageRoute(
+  //                           builder: (_) => const CreateAccountScreen(),
+  //                         ),
+  //                       ),
+  //                   child: const Text("Don't have an account? Sign up"),
+  //                 ),
+  //               ],
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Ensures layout resizes with keyboard
       backgroundColor: const Color(0xFF7BDAEB),
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Welcome to EduCare",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.person,
-                    color: isParent ? Colors.blue : Colors.grey,
-                    size: 32,
+                const Text(
+                  "Welcome to EduCare",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C3E50),
                   ),
-                  onPressed: () => _toggleUserType(true),
                 ),
-                const SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(
-                    Icons.child_care,
-                    color: !isParent ? Colors.black : Colors.grey,
-                    size: 32,
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.person,
+                        color: isParent ? Colors.blue : Colors.grey,
+                        size: 32,
+                      ),
+                      onPressed: () => _toggleUserType(true),
+                    ),
+                    const SizedBox(width: 20),
+                    IconButton(
+                      icon: Icon(
+                        Icons.child_care,
+                        color: !isParent ? Colors.black : Colors.grey,
+                        size: 32,
+                      ),
+                      onPressed: () => _toggleUserType(false),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        final isFront = _controller.value < 0.5;
+                        final angle =
+                            isFront
+                                ? _controller.value * 3.14
+                                : (1 - _controller.value) * 3.14;
+                        return Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.rotationY(angle),
+                          child: _buildLoginCard(),
+                        );
+                      },
+                    ),
                   ),
-                  onPressed: () => _toggleUserType(false),
                 ),
               ],
-            ),
-            const SizedBox(height: 20),
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                final isFront = _controller.value < 0.5;
-                final angle =
-                    isFront
-                        ? _controller.value * 3.14
-                        : (1 - _controller.value) * 3.14;
-                return Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(angle),
-                  child: _buildLoginCard(),
-                );
-              },
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -198,12 +456,19 @@ class _LoginScreenState extends State<LoginScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator:
-                    (value) => value!.isEmpty ? 'Enter your email' : null,
-              ),
+              isParent
+                  ? TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    validator:
+                        (value) => value!.isEmpty ? 'Enter your email' : null,
+                  )
+                  : TextFormField(
+                    controller: _childNameController,
+                    decoration: const InputDecoration(labelText: 'Child Name'),
+                    validator:
+                        (value) => value!.isEmpty ? 'Enter child name' : null,
+                  ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _passwordController,
@@ -224,14 +489,29 @@ class _LoginScreenState extends State<LoginScreen>
                 validator:
                     (value) => value!.isEmpty ? 'Enter your password' : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+
+              // 🔵 Forgot password for parent only
+              if (isParent)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _resetPassword,
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _loginUser,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3498DB),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
+                    horizontal: 75,
                     vertical: 14,
                   ),
                   shape: RoundedRectangleBorder(

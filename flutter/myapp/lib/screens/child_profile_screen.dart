@@ -145,7 +145,10 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset("assets/background.png", fit: BoxFit.cover),
+            child: Image.asset(
+              "assets/images/background.png",
+              fit: BoxFit.cover,
+            ),
           ),
           Container(color: Colors.blue.withOpacity(0.3)),
           SafeArea(
@@ -154,7 +157,7 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
               child: Column(
                 children: [
                   SizedBox(height: 10),
-                  Image.asset("assets/logo_pic.png", height: 120),
+                  Image.asset("assets/images/logo_pic.png", height: 120),
                   SizedBox(height: 10),
                   Text(
                     "CHILD'S PROFILE",

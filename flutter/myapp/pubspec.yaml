@@ -20,6 +20,7 @@ dependencies:
     sdk: flutter
   http: ^1.2.0
   shared_preferences: ^2.2.2
+  video_player: ^2.5.1 # Add the video_player package (check for the latest version)
   flutter_svg: ^2.0.7
   email_validator: ^3.0.0
   firebase_core: ^3.12.1
@@ -33,13 +34,17 @@ dependencies:
   intl: ^0.18.0
   pdf: ^3.10.4
   printing: ^5.12.0
-  speech_to_text: ^6.3.0
+  speech_to_text: ^7.0.0
   flutter_tts: ^3.6.3
   firebase_database: ^11.3.5
+  path_provider: ^2.0.15
+  permission_handler: ^11.3.1
+  logging: ^1.0.2 # check the latest version
+  audioplayers: ^6.4.0
+  animated_text_kit: ^4.2.2
+  cached_network_image: ^3.2.0
 
-
-
- # The following adds the Cupertino Icons font to your application.
+  # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
@@ -66,33 +71,114 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/robot.png
-    - assets/HelloEDUBOT.png
-    - assets/back_arrow.svg
-    - assets/bars.svg
-    - assets/user.svg
-    - assets/paper-plane-solid.svg
-    - assets/result_analyze.png
-    - assets/background.png
-    - assets/create_acc.png
-    - assets/welcome_to_educare.png
-    - assets/google_logo.png
-    - assets/logo_pic.png
-    - assets/child_profile.png
     - assets/animations/Analyzing.json
-    - assets/children-profile.svg
-    - assets/Setting.svg
-    - assets/progress_report.svg
-    - assets/logout.svg
-    - assets/repeat_after_me.jpg
-    - assets/greeting.jpg
-    - assets/making_request.webp
-    - assets/talking_with_friends.jpg
-    - assets/good_manners.webp
-    - assets/expressing_needs.webp
-    - assets/expressing_emotions.jpg
-    - assets/asking_for_help.png
-    - assets/answer_question.webp
+    - assets/images/robot.png
+    - assets/images/HelloEDUBOT.png
+    - assets/images/back_arrow.svg
+    - assets/images/bars.svg
+    - assets/images/user.svg
+    - assets/images/paper-plane-solid.svg
+    - assets/images/result_analyze.png
+    - assets/images/background.png
+    - assets/images/create_acc.png
+    - assets/images/welcome_to_educare.png
+    - assets/images/google_logo.png
+    - assets/images/logo_pic.png
+    - assets/images/child_profile.png
+    - assets/images/children-profile.svg
+    - assets/images/Setting.svg
+    - assets/images/progress_report.svg
+    - assets/images/logout.svg
+    - assets/images/repeat_after_me.jpg
+    - assets/images/greeting.jpg
+    - assets/images/making_request.webp
+    - assets/images/talking_with_friends.jpg
+    - assets/images/good_manners.webp
+    - assets/images/expressing_needs.webp
+    - assets/images/expressing_emotions.jpg
+    - assets/images/asking_for_help.png
+    - assets/images/answer_question.webp
+    - assets/images/cognitive_skills.png
+    - assets/images/morning_routine.png
+    - assets/images/going_to_school.png
+    - assets/videos/morning_routine.mp4
+    - assets/videos/going_to_school_routine.mp4
+    - assets/images/after_school_routine.png
+    - assets/images/wake_up.png # 1st step of morning_routine
+    - assets/images/brush_teeth.png # 2nd step of ***************
+    - assets/images/wash_face.png # 3rd step of ***************
+    - assets/images/eat_breakfast.png # 4th step of *************
+    - assets/images/pack_bag.png # 5th step of *************
+    - assets/images/go_to_school.png # 6th step of *************
+
+    - assets/images/wave_goodbye.png # 1st step of going_to_school_routine
+    - assets/images/walk_to_the_bus_stop.png # 2nd step of ***************
+    - assets/images/get_on_the_bus.png # 3rd step of ***************
+    - assets/images/ride_the_bus_to_school.png # 4th step of ***************
+    - assets/images/arrive_at_school.png # 5th step of ***************
+    - assets/images/enter_classroom.png # 6th step of ***************
+
+    # Haseeb's assets
+    - assets/images/kids-meditating.jpeg
+    - assets/images/kids-celebrating.jpeg
+    - assets/images/kids-helping-eachother.png
+    - assets/images/multiple-emotions-kids.jpeg
+    - assets/images/Behavioral skill.jpeg
+    - assets/images/Happy Emotion.jpeg
+    - assets/images/Sad Emotion.jpeg
+    - assets/images/Angry Emotion.jpeg
+    - assets/images/repeat_after_me.jpg
+    - assets/images/Recognizing-Behavior.jpeg
+    - assets/images/Social-Cues.jpeg
+    - assets/images/Scared Emotion.jpeg
+    - assets/images/Curious Emotion.jpeg
+    - assets/images/adult-help.jpeg
+    - assets/images/walk-away.jpeg
+    - assets/images/deep-breath.jpeg
+    - assets/images/say-angry.jpeg
+    - assets/images/saying-thanks.jpeg
+    - assets/images/helping-child.jpeg
+    - assets/images/toy-sharing.jpeg
+    - assets/images/Child-Waving.png
+    - assets/images/Child-playing-box.jpeg
+    - assets/images/child-hitting.jpeg
+    - assets/images/child-screaming.jpeg
+    - assets/images/child-throwing.jpeg
+    - assets/images/facing-eachother.jpeg
+    - assets/images/body-language.jpeg
+    - assets/images/upset-kid.jpeg
+    - assets/images/eye-contact.jpeg
+    - assets/images/thumbs-up.jpeg
+    - assets/images/scared-kid.jpg
+    - assets/images/question-ask.png
+    - assets/images/understanding-emotion.jpeg
+    - assets/sounds/positive-answer.mp3
+    - assets/sounds/wrong-answer.mp3
+    - assets/sounds/cheer-up.mp3
+    - assets/images/Bad Feeling.jpg
+    - assets/images/Good Feeling.jpg
+    - assets/images/joy-fruit.jpeg
+    - assets/images/excitement-fruit.jpeg
+    - assets/images/love-fruit.jpeg
+    - assets/images/anger-fruit.jpeg
+    - assets/images/scared-fruit.jpeg
+    - assets/images/fear-fruit.jpeg
+    - assets/images/emotion-sorting.jpeg
+    - assets/images/playing-nicely.jpeg
+    - assets/images/helping-book.jpeg
+    - assets/images/yelling-kid.jpeg
+    - assets/images/grabbing-toy.jpeg
+    - assets/images/sharing-toy.jpeg
+    - assets/images/teacher-teaching.jpg
+    - assets/images/ask-question.jpeg
+    - assets/images/throwing-paper.jpg
+    - assets/images/sitting-attentive.jpg
+    - assets/images/turn-wait.jpg
+    - assets/images/pushing-kid.jpg
+    - assets/images/kid-climb.jpg
+    - assets/images/running-away.jpg
+    - assets/images/ignoring-child.jpg
+    - assets/images/laughing-someone.jpeg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

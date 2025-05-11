@@ -44,7 +44,7 @@ class _ChatInputState extends State<ChatInput> {
           IconButton(
               onPressed: _send,
               icon: SvgPicture.asset(
-                'assets/paper-plane-solid.svg',
+                'assets/images/paper-plane-solid.svg',
                 height: 30,
                 width: 35,
                 colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),

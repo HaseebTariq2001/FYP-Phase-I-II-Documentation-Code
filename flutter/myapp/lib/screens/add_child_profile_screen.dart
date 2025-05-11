@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'child_profile_screen.dart'; // Import Child Profile Setup Page
 import 'home_screen.dart'; // Import Chatbot Screen
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AddChildProfileScreen extends StatelessWidget {
   const AddChildProfileScreen({super.key});
@@ -12,7 +14,10 @@ class AddChildProfileScreen extends StatelessWidget {
         children: [
           // Background Image
           Positioned.fill(
-            child: Image.asset("assets/background.png", fit: BoxFit.cover),
+            child: Image.asset(
+              "assets/images/background.png",
+              fit: BoxFit.cover,
+            ),
           ),
 
           // Semi-transparent overlay
@@ -61,7 +66,7 @@ class AddChildProfileScreen extends StatelessWidget {
 
                 SizedBox(height: 20), // Space below Skip button
                 // Logo
-                Image.asset("assets/child_profile.png", width: 200),
+                Image.asset("assets/images/child_profile.png", width: 200),
 
                 SizedBox(height: 50),
 
@@ -146,13 +151,18 @@ class AddChildProfileScreen extends StatelessWidget {
               child: Text("Cancel", style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                final GoogleSignIn _googleSignIn = GoogleSignIn();
+                await FirebaseAuth.instance.signOut();
+                await _googleSignIn.signOut();
+
                 Navigator.pop(context); // Close dialog
                 Navigator.pushReplacementNamed(
                   context,
                   "/login",
                 ); // Navigate to Login Screen
               },
+
               child: Text(
                 "Logout",
                 style: TextStyle(

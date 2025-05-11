@@ -70,7 +70,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Opacity(
                       opacity: 0.40,
                       child: Image.asset(
-                        'assets/robot.png',
+                        'assets/images/robot.png',
                         width: 170,
                         height: 170,
                         fit: BoxFit.contain,

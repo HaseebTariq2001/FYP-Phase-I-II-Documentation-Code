@@ -88,7 +88,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "assets/background.png",
+              "assets/images/background.png",
               fit: BoxFit.cover,
             ),
           ),
@@ -101,7 +101,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 children: [
                   // 🔹 Replaced text with image
                   Image.asset(
-                    "assets/create_acc.png", // Make sure this image exists
+                    "assets/images/create_acc.png", // Make sure this image exists
                     height: 80,
                   ),
                   SizedBox(height: 25),
