@@ -15,6 +15,7 @@ from flask_mysqldb import MySQL
 from config import Config
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash  # if you're using hashed passwords
+import base64
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -168,37 +169,166 @@ def verify_child_login():
         print("❌ Error verifying child login:", e)
         return jsonify({'success': False, 'message': 'Server error'}), 500
 
-# Fetch the first child profile
-@app.route('/child', methods=['GET'])
-def get_child():
+
+# @app.route('/child', methods=['GET'])
+# def get_child():
+#     try:
+#         cur = mysql.connection.cursor()
+#         cur.execute("SELECT name, password, image_blob FROM child_profiles")
+#         child = cur.fetchone()
+#         cur.close()
+
+#         if child:
+#             name, password, image_blob = child
+
+#             # Safely encode image_blob if it's not None
+#             image_blob_base64 = base64.b64encode(image_blob).decode('utf-8') if image_blob else None
+#             print("Image Blob:", image_blob[:10])  # To confirm it exists
+
+#             return jsonify({
+#                 'name': name,
+#                 'password': password,
+#                 'image_blob': image_blob_base64
+#             }), 200
+#         else:
+#             return jsonify({'error': 'No child profile found'}), 404
+
+#     except Exception as e:
+#         print("Error in /child route:", e)  # Log the exact error
+#         return jsonify({'error': str(e)}), 500
+
+# @app.route('/child', methods=['PUT'])
+# def update_child():
+#     try:
+#         data = request.get_json()
+#         name = data.get('name')
+#         password = data.get('password')
+#         image_blob_base64 = data.get('image_blob')
+
+#         image_blob = None
+#         if image_blob_base64:
+#             image_blob = base64.b64decode(image_blob_base64)
+
+#         cur = mysql.connection.cursor()
+#         cur.execute("SET GLOBAL max_allowed_packet=67108864;")
+#         # print("Image size: ", len(image_blob))  # Check the image size before inserting
+
+#         if image_blob:
+#             cur.execute("UPDATE child_profiles SET name = %s, password = %s, image_blob = %s LIMIT 1",
+#                         (name, password, image_blob))
+#         else:
+#             cur.execute("UPDATE child_profiles SET name = %s, password = %s LIMIT 1",
+#                         (name, password))
+
+#         mysql.connection.commit()
+#         cur.close()
+#         return jsonify({'message': 'Profile updated successfully'}), 200
+
+#     except Exception as e:
+#         traceback.print_exc()  # To log full error
+#         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/child_list', methods=['GET'])
+def get_child_data():
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT name, password FROM child_profiles LIMIT 1")
+        # Modified: Use fetchall() instead of fetchone() to retrieve all child records
+        cur.execute("SELECT name, password, image_blob FROM child_profiles")
+        children = cur.fetchall()
+        cur.close()
+
+        if children:
+            # Modified: Create a list of child profiles to return all records
+            child_list = []
+            for child in children:
+                name, password, image_blob = child
+                # Safely encode image_blob if it's not None
+                image_blob_base64 = base64.b64encode(image_blob).decode('utf-8') if image_blob else None
+                child_list.append({
+                    'name': name,
+                    'password': password,
+                    'image_blob': image_blob_base64
+                })
+            # Modified: Return the list of children as JSON
+            return jsonify(child_list), 200
+        else:
+            return jsonify({'error': 'No child profiles found'}), 404
+
+    except Exception as e:
+        print("Error in /child route:", e)  # Log the exact error
+        return jsonify({'error': str(e)}), 500
+
+
+# Added: New endpoint to fetch a specific child by name
+@app.route('/child/<name>', methods=['GET'])
+def get_child_by_name(name):
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT name, password, image_blob FROM child_profiles WHERE name = %s", (name,))
         child = cur.fetchone()
         cur.close()
+
         if child:
-            return jsonify({'name': child[0], 'password': child[1]}), 200
+            name, password, image_blob = child
+            image_blob_base64 = base64.b64encode(image_blob).decode('utf-8') if image_blob else None
+            return jsonify({
+                'name': name,
+                'password': password,
+                'image_blob': image_blob_base64
+            }), 200
         else:
-            return jsonify({'error': 'No child profile found'}), 404
+            return jsonify({'error': 'Child profile not found'}), 404
+
     except Exception as e:
+        print("Error in /child/<name> route:", e)
         return jsonify({'error': str(e)}), 500
 
-# Update the first child profile
-@app.route('/child', methods=['PUT'])
-def update_child():
+# Added: New endpoint to update a specific child by name
+@app.route('/child/<name>', methods=['PUT'])
+def update_specific_child(name):
     try:
         data = request.get_json()
-        name = data.get('name')
+        new_name = data.get('name')
         password = data.get('password')
+        image_blob_base64 = data.get('image_blob')
+
+        image_blob = base64.b64decode(image_blob_base64) if image_blob_base64 else None
 
         cur = mysql.connection.cursor()
-        cur.execute("UPDATE child_profiles SET name = %s, password = %s LIMIT 1", (name, password))
+        cur.execute(
+            "UPDATE child_profiles SET name = %s, password = %s, image_blob = %s WHERE name = %s",
+            (new_name, password, image_blob, name)
+        )
         mysql.connection.commit()
         cur.close()
+
         return jsonify({'message': 'Profile updated successfully'}), 200
+
     except Exception as e:
+        print("Error in /child/<name> route:", e)
         return jsonify({'error': str(e)}), 500
 
+# Added: New endpoint to delete a child profile
+@app.route('/child/<name>', methods=['DELETE'])
+def delete_child(name):
+    try:
+        print(f"Deleting child with name: {name}")  # Debug: Log the deletion attempt
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM child_profiles WHERE TRIM(LOWER(name)) = TRIM(LOWER(%s))", (name,))
+        if cur.rowcount > 0:
+            mysql.connection.commit()
+            cur.close()
+            print(f"Child {name} deleted successfully")  # Debug: Log successful deletion
+            return jsonify({'message': 'Child deleted successfully'}), 200
+        else:
+            cur.close()
+            print(f"No child found to delete with name: {name}")  # Debug: Log when no child is found
+            return jsonify({'error': 'Child profile not found'}), 404
+
+    except Exception as e:
+        print(f"Error in /child/{name} route: {e}")  # Debug: Log any errors
+        return jsonify({'error': str(e)}), 500
 
 
 

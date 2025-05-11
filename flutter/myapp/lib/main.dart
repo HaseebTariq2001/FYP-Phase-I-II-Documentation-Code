@@ -11,6 +11,7 @@ import 'package:myapp/screens/activity_screens/tap_good_activity.dart'
     show TapGoodBehaviorActivityScreen;
 import 'package:myapp/screens/progress_report_screen.dart';
 import 'screens/Learning and lesson/lesson_screen.dart';
+import 'screens/parent_profile_update.dart';
 import 'screens/splash_screen.dart';
 import 'screens/create_account_screen.dart';
 import 'screens/login_screen.dart';
@@ -36,8 +37,8 @@ class EduBotApp extends StatelessWidget {
       title: 'EduCare',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: SplashScreen(),
-
+      // home: SplashScreen(),
+      home: ParentProfileScreen(),
       routes: {
         '/create_account': (context) => CreateAccountScreen(),
         '/login': (context) => LoginScreen(),

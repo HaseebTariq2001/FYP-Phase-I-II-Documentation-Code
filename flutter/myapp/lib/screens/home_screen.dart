@@ -2,9 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:myapp/screens/child_profile_management.dart';
+// import 'package:myapp/screens/child_profile_management.dart';
 import 'Learning and lesson/child_dashboard_screen.dart';
 import 'chat_screen.dart';
+import 'child_profile_management_list.dart';
 import 'progress_report_screen.dart';
 import '../widgets/app_header.dart';
 
@@ -243,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChildProfileScreen(),
+                        builder: (context) => SelectChildScreen(),
                       ),
                     );
                   },
