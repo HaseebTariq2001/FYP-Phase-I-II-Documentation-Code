@@ -160,6 +160,7 @@ class _LoginScreenState extends State<LoginScreen>
           /// ✅ Save child_id in SharedPreferences
           final prefs = await SharedPreferences.getInstance();
           await prefs.setInt('child_id', childId);
+          await prefs.setString('child_name', data['name']); // store name
 
           debugPrint("Child ID saved: $childId");
 

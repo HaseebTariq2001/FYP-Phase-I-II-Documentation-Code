@@ -9,14 +9,24 @@ import 'package:myapp/screens/Learning and lesson/behavioral_skill_lesson_screen
 import 'package:myapp/screens/Learning and lesson/routine_submodule_screen.dart';
 import 'package:myapp/screens/activity_screens/activity_detail_screen.dart';
 import 'package:myapp/screens/activity_screens/behavior_activity_list.dart';
+import 'package:myapp/screens/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../progress_report_screen.dart' show ProgressReportScreen;
 
 class LearningTabScreen extends StatelessWidget {
-  Future<Map<String, dynamic>> fetchChildData(String name) async {
+  Future<Map<String, dynamic>> fetchChildData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final childName = prefs.getString('child_name');
+
+    if (childName == null) {
+      throw Exception("Child name not found in local storage.");
+    }
+
     final response = await http.get(
-      Uri.parse('http://192.168.1.6:8000/child/$name'),
+      Uri.parse('http://192.168.1.6:8000/child/$childName'),
     );
+
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -54,120 +64,7 @@ class LearningTabScreen extends StatelessWidget {
             tabs: [Tab(text: "Learning Modules"), Tab(text: "Games")],
           ),
         ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // DrawerHeader(
-              //   decoration: BoxDecoration(color: Colors.blue),
-              //   child: Column(
-              //     children: [
-              //       Image.asset(
-              //         'assets/images/logo_pic.png',
-              //         height: 100,
-              //         width: 100,
-              //         fit: BoxFit.contain,
-              //       ),
-
-              //       const SizedBox(width: 8),
-
-              //       Text(
-              //         'EDUCARE',
-              //         style: TextStyle(
-              //           color: Colors.white,
-              //           fontSize: 24,
-              //           fontWeight: FontWeight.bold,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              DrawerHeader(
-                decoration: BoxDecoration(color: Colors.blue),
-                child: FutureBuilder<Map<String, dynamic>>(
-                  future: fetchChildData(
-                    "waheed",
-                  ), // Replace with actual name variable
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(color: Colors.white);
-                    } else if (snapshot.hasError) {
-                      return Text(
-                        'Error loading profile',
-                        style: TextStyle(color: Colors.white),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data == null) {
-                      return Text(
-                        'No profile found',
-                        style: TextStyle(color: Colors.white),
-                      );
-                    }
-
-                    final childData = snapshot.data!;
-                    final imageBytes = base64Decode(
-                      childData['image_blob'] ?? "",
-                    );
-
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundImage: MemoryImage(imageBytes),
-                          backgroundColor: Colors.white,
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          childData['name'] ?? "Child Name",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              ListTile(
-                leading: Icon(Icons.stacked_bar_chart_sharp),
-                title: Text('Progress report'),
-                onTap: () {
-                  // Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProgressReportScreen(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onTap: () async {
-                  final GoogleSignIn _googleSignIn = GoogleSignIn();
-                  await FirebaseAuth.instance.signOut();
-                  await _googleSignIn.signOut();
-
-                  Navigator.pop(context); // Close dialog
-                  Navigator.pushReplacementNamed(
-                    context,
-                    "/login",
-                  ); // Navigate to Login Screen
-                },
-              ),
-            ],
-          ),
-        ),
+        drawer: _DrawerWidget(fetchChildData: fetchChildData),
         body: TabBarView(
           children: [
             // Tab 1: Learning Modules
@@ -251,7 +148,6 @@ class LearningTabScreen extends StatelessWidget {
                       );
                     },
                   ),
-
                   _buildCard(
                     imagePath: 'assets/images/cognitive_skills.png',
                     title: "Cognitive Skills (Games and Activities)",
@@ -261,9 +157,7 @@ class LearningTabScreen extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder:
-                              (_) =>
-                                  RoutineActivitiesScreen(), //add your activity list route
+                          builder: (_) => RoutineActivitiesScreen(),
                         ),
                       );
                     },
@@ -336,6 +230,169 @@ class LearningTabScreen extends StatelessWidget {
                 child: Text(buttonText),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DrawerWidget extends StatefulWidget {
+  final Future<Map<String, dynamic>> Function() fetchChildData;
+
+  const _DrawerWidget({required this.fetchChildData});
+
+  @override
+  _DrawerWidgetState createState() => _DrawerWidgetState();
+}
+
+class _DrawerWidgetState extends State<_DrawerWidget> {
+  late Future<Map<String, dynamic>> _childDataFuture;
+  String? _childNameKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFuture();
+  }
+
+  // Initialize the Future and child name key for the FutureBuilder
+  void _initializeFuture() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _childNameKey = prefs.getString('child_name') ?? 'default';
+      _childDataFuture = widget.fetchChildData();
+    });
+  }
+
+  // Refresh the Future to fetch new data when the drawer is opened
+  void _refreshChildData() {
+    setState(() {
+      _childDataFuture = widget.fetchChildData();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Call _refreshChildData when the drawer is opened
+    _refreshChildData();
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Colors.blue),
+            child: FutureBuilder<Map<String, dynamic>>(
+              key: ValueKey(_childNameKey), // Rebuild when child name changes
+              future: _childDataFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator(color: Colors.white);
+                } else if (snapshot.hasError) {
+                  return Text(
+                    'Error loading profile',
+                    style: TextStyle(color: Colors.white),
+                  );
+                } else if (!snapshot.hasData || snapshot.data == null) {
+                  return Text(
+                    'No profile found',
+                    style: TextStyle(color: Colors.white),
+                  );
+                }
+
+                final childData = snapshot.data!;
+                final imageBlob = childData['image_blob'];
+                final imageBytes =
+                    (imageBlob != null && imageBlob.isNotEmpty)
+                        ? base64Decode(imageBlob)
+                        : null;
+
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.white,
+                      child:
+                          imageBytes != null
+                              ? ClipOval(
+                                child: Image.memory(
+                                  imageBytes,
+                                  fit: BoxFit.cover,
+                                  width: 80,
+                                  height: 80,
+                                  errorBuilder:
+                                      (context, error, stackTrace) => Icon(
+                                        Icons.person,
+                                        size: 40,
+                                        color: Colors.grey,
+                                      ),
+                                ),
+                              )
+                              : Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      childData['name'] ?? "Child Name",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.stacked_bar_chart_sharp),
+            title: Text('Progress report'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProgressReportScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.switch_account),
+            title: Text('Switch Dashboard'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text(
+              'Logout',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            onTap: () async {
+              // Initialize Google Sign-In and Firebase Auth
+              final GoogleSignIn _googleSignIn = GoogleSignIn();
+              await FirebaseAuth.instance.signOut();
+              await _googleSignIn.signOut();
+
+              // Clear child_name from SharedPreferences to prevent stale data
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('child_name');
+
+              // Close the drawer and navigate to the login screen
+              Navigator.pop(context); // Close drawer
+              Navigator.pushReplacementNamed(
+                context,
+                "/login",
+              ); // Navigate to Login Screen
+            },
           ),
         ],
       ),
