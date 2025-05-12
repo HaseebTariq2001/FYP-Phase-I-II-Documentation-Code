@@ -6,6 +6,8 @@ import 'package:myapp/screens/Learning and lesson/behavioral_skill_lesson_screen
 import 'package:myapp/screens/Learning and lesson/routine_submodule_screen.dart';
 import 'package:myapp/screens/activity_screens/activity_detail_screen.dart';
 import 'package:myapp/screens/activity_screens/behavior_activity_list.dart';
+
+import '../progress_report_screen.dart' show ProgressReportScreen;
 // import 'package:myapp/screens/activity_screens/activity_detail_screen.dart';
 
 class LearningTabScreen extends StatelessWidget {
@@ -71,6 +73,20 @@ class LearningTabScreen extends StatelessWidget {
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
                 onTap: () {},
+              ),
+    
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Progress report'),
+                onTap: () {
+                    // Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProgressReportScreen(),
+                      ),
+                    );
+                  },
               ),
               ListTile(
                 leading: Icon(Icons.logout),

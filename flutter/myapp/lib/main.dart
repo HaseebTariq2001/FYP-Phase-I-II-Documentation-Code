@@ -37,8 +37,8 @@ class EduBotApp extends StatelessWidget {
       title: 'EduCare',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      // home: SplashScreen(),
-      home: ParentProfileScreen(),
+      home: SplashScreen(),
+      // home: ParentProfileScreen(),
       routes: {
         '/create_account': (context) => CreateAccountScreen(),
         '/login': (context) => LoginScreen(),

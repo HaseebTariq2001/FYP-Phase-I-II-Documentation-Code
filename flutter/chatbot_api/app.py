@@ -1,6 +1,7 @@
 
 ###############################################################################################################################
 
+import datetime
 from flask import Flask, request, jsonify
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 from sentence_transformers import SentenceTransformer
@@ -142,6 +143,7 @@ def assess_autism():
     })
 
 # Child login checkup
+# This is the logic where child id is also retrieved
 
 @app.route('/api/verify_child_login', methods=['POST'])
 def verify_child_login():
@@ -151,82 +153,39 @@ def verify_child_login():
 
     try:
         cursor = mysql.connection.cursor()
-        # Replace with your actual table and column names
-        cursor.execute("SELECT password FROM child_profiles WHERE name = %s", (name,))
+        # ✅ Fetch both id and password
+        cursor.execute("SELECT id, password FROM child_profiles WHERE name = %s", (name,))
         result = cursor.fetchone()
         cursor.close()
 
         if result:
-            stored_password = result[0]
-            if stored_password == password:  # Use check_password_hash if hashed
-                return jsonify({'success': True}), 200
+            child_id = result[0]               # ✅ Get id
+            stored_password = result[1]
+
+            # ✅ If password matches
+            if stored_password == password:    # (Use check_password_hash if you hash later)
+                return jsonify({
+                    'success': True,
+                    'id': child_id,            # ✅ Return child id for session saving
+                    'name': name
+                }), 200
             else:
-                return jsonify({'success': False, 'message': 'Incorrect password'}), 401
+                return jsonify({
+                    'success': False,
+                    'message': 'Incorrect password'
+                }), 401
         else:
-            return jsonify({'success': False, 'message': 'User not found'}), 404
+            return jsonify({
+                'success': False,
+                'message': 'User not found'
+            }), 404
 
     except Exception as e:
         print("❌ Error verifying child login:", e)
-        return jsonify({'success': False, 'message': 'Server error'}), 500
-
-
-# @app.route('/child', methods=['GET'])
-# def get_child():
-#     try:
-#         cur = mysql.connection.cursor()
-#         cur.execute("SELECT name, password, image_blob FROM child_profiles")
-#         child = cur.fetchone()
-#         cur.close()
-
-#         if child:
-#             name, password, image_blob = child
-
-#             # Safely encode image_blob if it's not None
-#             image_blob_base64 = base64.b64encode(image_blob).decode('utf-8') if image_blob else None
-#             print("Image Blob:", image_blob[:10])  # To confirm it exists
-
-#             return jsonify({
-#                 'name': name,
-#                 'password': password,
-#                 'image_blob': image_blob_base64
-#             }), 200
-#         else:
-#             return jsonify({'error': 'No child profile found'}), 404
-
-#     except Exception as e:
-#         print("Error in /child route:", e)  # Log the exact error
-#         return jsonify({'error': str(e)}), 500
-
-# @app.route('/child', methods=['PUT'])
-# def update_child():
-#     try:
-#         data = request.get_json()
-#         name = data.get('name')
-#         password = data.get('password')
-#         image_blob_base64 = data.get('image_blob')
-
-#         image_blob = None
-#         if image_blob_base64:
-#             image_blob = base64.b64decode(image_blob_base64)
-
-#         cur = mysql.connection.cursor()
-#         cur.execute("SET GLOBAL max_allowed_packet=67108864;")
-#         # print("Image size: ", len(image_blob))  # Check the image size before inserting
-
-#         if image_blob:
-#             cur.execute("UPDATE child_profiles SET name = %s, password = %s, image_blob = %s LIMIT 1",
-#                         (name, password, image_blob))
-#         else:
-#             cur.execute("UPDATE child_profiles SET name = %s, password = %s LIMIT 1",
-#                         (name, password))
-
-#         mysql.connection.commit()
-#         cur.close()
-#         return jsonify({'message': 'Profile updated successfully'}), 200
-
-#     except Exception as e:
-#         traceback.print_exc()  # To log full error
-#         return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'message': 'Server error'
+        }), 500
 
 
 @app.route('/child_list', methods=['GET'])
@@ -330,6 +289,84 @@ def delete_child(name):
         print(f"Error in /child/{name} route: {e}")  # Debug: Log any errors
         return jsonify({'error': str(e)}), 500
 
+# saira code
+
+@app.route('/api/save-activity', methods=['POST'])
+def save_activity():
+    data = request.get_json()
+    child_id = data['child_id']
+    activity_name = data['activity_name']
+    skill_category = data['skill_category']
+    correct_phrases = data['correct_phrases']
+    total_phrases = data['total_phrases']
+    timestamp = datetime.datetime.now()
+
+    try:
+        cursor = mysql.connection.cursor()
+
+        # Check if the record already exists
+        cursor.execute("""
+            SELECT * FROM child_activities 
+            WHERE child_id = %s AND activity_name = %s
+        """, (child_id, activity_name))
+        existing = cursor.fetchone()
+
+        if existing:
+            # Update existing record
+            cursor.execute("""
+                UPDATE child_activities
+                SET skill_category = %s,
+                    correct_phrases = %s,
+                    total_phrases = %s,
+                    timestamp = %s
+                WHERE child_id = %s AND activity_name = %s
+            """, (skill_category, correct_phrases, total_phrases, timestamp, child_id, activity_name))
+        else:
+            # Insert new record
+            cursor.execute("""
+                INSERT INTO child_activities (child_id, activity_name, skill_category, correct_phrases, total_phrases, timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (child_id, activity_name, skill_category, correct_phrases, total_phrases, timestamp))
+
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'message': 'Activity saved/updated successfully'}), 200
+
+    except Exception as e:
+        print("❌ Error saving activity:", e)
+        return jsonify({'message': 'Error saving activity'}), 500
+
+
+
+# ✅ Get child activity progress
+@app.route('/api/progress/<int:child_id>', methods=['GET'])
+def get_progress(child_id):
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("""
+            SELECT activity_name, skill_category, correct_phrases, total_phrases, timestamp
+            FROM child_activities
+            WHERE child_id = %s
+            ORDER BY timestamp DESC
+        """, (child_id,))
+        results = cursor.fetchall()
+        cursor.close()
+
+        progress = []
+        for row in results:
+            progress.append({
+                'activity_name': row[0],
+                'skill_category': row[1],
+                'correct_phrases': row[2],
+                'total_phrases': row[3],
+                'timestamp': row[4].strftime('%Y-%m-%d %H:%M:%S')
+            })
+
+        return jsonify(progress), 200
+
+    except Exception as e:
+        print("❌ Error fetching progress:", e)
+        return jsonify({'message': 'Error fetching progress'}), 500
 
 
 

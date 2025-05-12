@@ -205,11 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(color: primaryColor),
                   ),
                   onTap: () {
-                    Navigator.pop(context);
+                    // Navigator.pop(context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const ProgressReportScreen(),
+                        builder: (context) => ProgressReportScreen(),
                       ),
                     );
                   },
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   await FirebaseAuth.instance.signOut();
                   await _googleSignIn.signOut();
 
-                  Navigator.pop(context); // Close dialog
+                  // Navigator.pop(context); // Close dialog
                   Navigator.pushReplacementNamed(
                     context,
                     "/login",

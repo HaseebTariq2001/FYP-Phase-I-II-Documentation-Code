@@ -101,8 +101,8 @@ flutter:
     - assets/images/cognitive_skills.png
     - assets/images/morning_routine.png
     - assets/images/going_to_school.png
-    - assets/videos/morning_routine.mp4
-    - assets/videos/going_to_school_routine.mp4
+    # - assets/videos/morning_routine.mp4
+    # - assets/videos/going_to_school_routine.mp4
     - assets/images/after_school_routine.png
     - assets/images/wake_up.png # 1st step of morning_routine
     - assets/images/brush_teeth.png # 2nd step of ***************
