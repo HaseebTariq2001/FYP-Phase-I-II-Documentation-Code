@@ -221,8 +221,16 @@ class _TapGoodBehaviorActivityScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title), // Use passed title
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.orangeAccent,
+        iconTheme: const IconThemeData(color: Colors.white), // added for icon
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

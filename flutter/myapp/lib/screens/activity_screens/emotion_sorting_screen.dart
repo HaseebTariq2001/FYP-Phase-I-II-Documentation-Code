@@ -301,7 +301,19 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)), // Use passed title
+      // appBar: AppBar(title: Text(widget.title)), // Use passed title
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.orangeAccent,
+        iconTheme: const IconThemeData(color: Colors.black), // added for icon
+      ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(

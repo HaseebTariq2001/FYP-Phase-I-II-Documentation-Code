@@ -34,15 +34,15 @@ with app.app_context():
         print("❌ Failed to connect to the MySQL database:", e)
 
 # Load tokenizer and model
-# tokenizer = AutoTokenizer.from_pretrained("tokenizer")
-# model = AutoModelForQuestionAnswering.from_pretrained("model")
-# embedding_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+tokenizer = AutoTokenizer.from_pretrained("tokenizer")
+model = AutoModelForQuestionAnswering.from_pretrained("model")
+embedding_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
 
-# # Load Q&A dataset
-# df = pd.read_excel("autism_faqs.xlsx")
-# questions = df["Question"].fillna("").tolist()
-# answers = df["Answer"].fillna("").tolist()
-# question_embeddings = embedding_model.encode(questions, convert_to_tensor=True)
+# Load Q&A dataset
+df = pd.read_excel("autism_faqs.xlsx")
+questions = df["Question"].fillna("").tolist()
+answers = df["Answer"].fillna("").tolist()
+question_embeddings = embedding_model.encode(questions, convert_to_tensor=True)
 
 # Define CARS categories
 CARS_CATEGORIES = [

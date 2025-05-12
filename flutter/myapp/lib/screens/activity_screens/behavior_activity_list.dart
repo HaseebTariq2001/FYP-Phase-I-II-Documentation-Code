@@ -77,7 +77,7 @@ class _BehavioralSkillsScreenState
         centerTitle: true,
         title: const Text(
           "Behavioral Skills",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),

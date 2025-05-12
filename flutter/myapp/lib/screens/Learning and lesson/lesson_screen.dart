@@ -246,7 +246,20 @@ class _LessonScreenState extends State<LessonScreen> {
     double progress = (currentIndex + 1) / widget.phrases.length;
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      // appBar: AppBar(title: Text(widget.title)),
+      // Centered the text in middle
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            color: Colors.white,
+            // fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple,
+        iconTheme: const IconThemeData(color: Colors.white), // added for icon
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Card(

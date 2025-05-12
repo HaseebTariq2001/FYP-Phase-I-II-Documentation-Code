@@ -113,7 +113,9 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
                 ),
           );
         } else {
-          _showErrorDialog("Error: ${response.body}");
+          final errorData = jsonDecode(response.body);
+          _showErrorDialog(errorData['message'] ?? 'An error occurred');
+          // _showErrorDialog("Error: ${response.body}");
         }
       } catch (e) {
         setState(() {
@@ -129,7 +131,16 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
       context: context,
       builder:
           (_) => AlertDialog(
-            title: Text("Error"),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.error, color: Colors.red),
+                SizedBox(width: 10),
+                Text("Error"),
+              ],
+            ),
             content: Text(message),
             actions: [
               TextButton(

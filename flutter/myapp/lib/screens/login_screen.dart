@@ -233,12 +233,16 @@ class _LoginScreenState extends State<LoginScreen>
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "Welcome to EduCare",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
+                // Adding padding to move welcome text down slightly
+                const Padding(
+                  padding: EdgeInsets.only(top: 50.0), // Adjusted top padding
+                  child: Text(
+                    "Welcome to EduCare",
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C3E50),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
