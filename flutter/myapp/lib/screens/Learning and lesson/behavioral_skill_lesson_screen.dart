@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,85 +17,81 @@ class _BehavioralSkillsScreenState extends State<BehavioralSkillsScreen> {
       'subtitle': 'Lesson 1',
       'image': 'assets/images/multiple-emotions-kids.jpeg',
       'route': '/lessonDetail',
-      'locked': false, // First lesson is always unlocked
     },
     {
       'title': 'Recognizing Behavior',
       'subtitle': 'Lesson 2',
       'image': 'assets/images/Recognizing-Behavior.jpeg',
       'route': '/lessonDetail',
-      'locked': true,
     },
     {
       'title': 'Social Cues and Body Language',
       'subtitle': 'Lesson 3',
       'image': 'assets/images/Social-Cues.jpeg',
       'route': '/lessonDetail',
-      'locked': true,
     },
   ];
+
+  int unlockedLesson = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadLessonStates();
+    _loadUnlockedLesson();
   }
 
-  // Load lesson states from SharedPreferences
-  Future<void> _loadLessonStates() async {
+  /// Loads the highest unlocked lesson index from shared preferences
+  Future<void> _loadUnlockedLesson() async {
     final prefs = await SharedPreferences.getInstance();
-    for (int i = 0; i < lessons.length; i++) {
-      // Skip the first lesson as it's always unlocked
-      if (i > 0) {
-        final isUnlocked = prefs.getBool('lesson_$i') ?? false;
-        setState(() {
-          lessons[i]['locked'] = !isUnlocked;
-        });
-      }
-    }
+    setState(() {
+      unlockedLesson = prefs.getInt('unlockedLesson') ?? 0;
+    });
   }
 
-  // Save lesson state to SharedPreferences when unlocked
-  Future<void> _saveLessonState(int lessonIndex) async {
+  /// Saves the next unlocked lesson index if current lesson is completed
+  Future<void> _checkAndUnlockNextLesson(int currentIndex) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('lesson_$lessonIndex', true);
-  }
 
-  void unlockNextLesson(int currentIndex) {
-    if (currentIndex + 1 < lessons.length &&
-        lessons[currentIndex + 1]['locked']) {
+    // Simulate score checking (replace with actual logic if needed)
+    final completed =
+        prefs.getBool('lesson_${currentIndex}_completed') ?? false;
+
+    if (completed &&
+        currentIndex == unlockedLesson &&
+        currentIndex + 1 < lessons.length) {
+      await prefs.setInt('unlockedLesson', currentIndex + 1);
       setState(() {
-        lessons[currentIndex + 1]['locked'] = false;
+        unlockedLesson = currentIndex + 1;
       });
-      // Save the unlocked state
-      _saveLessonState(currentIndex + 1);
     }
+  }
+
+  /// Marks current lesson as completed (you can call this from lesson screen)
+  Future<void> markLessonAsCompleted(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('lesson_${index}_completed', true);
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Navigate to LearningTabScreen when back is pressed
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LearningTabScreen()),
         );
-        return false; // Prevent default back behavior
+        return false;
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.deepPurple, // Purple background
-          centerTitle: true, // Center the title
+          backgroundColor: Colors.deepPurple,
+          centerTitle: true,
           title: const Text(
             "Behavioral Skills",
-            style: TextStyle(color: Colors.white), // White text
+            style: TextStyle(color: Colors.white),
           ),
           leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ), // White back icon
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -105,81 +101,71 @@ class _BehavioralSkillsScreenState extends State<BehavioralSkillsScreen> {
           ),
         ),
         body: ListView.builder(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           itemCount: lessons.length,
           itemBuilder: (context, index) {
             final lesson = lessons[index];
-            final isLocked = lesson['locked'];
+            final isLocked = index > unlockedLesson;
 
-            return GestureDetector(
-              onTap: () async {
-                if (!isLocked) {
-                  final result = await Navigator.pushNamed(
-                    context,
-                    lesson['route'],
-                    arguments: {
-                      'title': lesson['title'],
-                      'onComplete': () => unlockNextLesson(index),
-                    },
-                  );
-
-                  if (result == 'completed') {
-                    unlockNextLesson(index);
-                  }
-                }
-              },
-              child: Opacity(
-                opacity: isLocked ? 0.5 : 1,
-                child: Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  color: !isLocked ? Colors.purple[50] : Colors.grey[200],
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            lesson['image'],
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                lesson['subtitle'],
-                                style: TextStyle(
-                                  color: Colors.deepPurple,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                lesson['title'],
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          isLocked ? Icons.lock : Icons.play_arrow,
-                          color: isLocked ? Colors.grey : Colors.deepPurple,
-                          size: 28,
-                        ),
-                      ],
-                    ),
+            return Card(
+              elevation: 3,
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              color: isLocked ? Colors.grey[200] : Colors.deepPurpleAccent,
+              child: ListTile(
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    lesson['image'],
+                    width: 70,
+                    height: 50,
+                    fit: BoxFit.cover,
                   ),
                 ),
+                title: Text(
+                  lesson['subtitle'],
+                  style: TextStyle(
+                    color: isLocked ? Colors.black54 : Colors.white,
+                  ),
+                ),
+                subtitle: Text(
+                  lesson['title'],
+                  style: TextStyle(
+                    color: isLocked ? Colors.black45 : Colors.white70,
+                  ),
+                ),
+                trailing: Icon(
+                  isLocked ? Icons.lock_outline : Icons.play_arrow,
+                  color: isLocked ? Colors.grey : Colors.white,
+                ),
+                onTap: () async {
+                  if (isLocked) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Please complete the previous lesson first.",
+                        ),
+                      ),
+                    );
+                  } else {
+                    final result = await Navigator.pushNamed(
+                      context,
+                      lesson['route'],
+                      arguments: {
+                        'title': lesson['title'],
+                        'lessonIndex': index,
+                      },
+                    );
+
+                    // If the lesson was marked complete, update progress
+                    if (result == 'completed') {
+                      await markLessonAsCompleted(index);
+                      await _checkAndUnlockNextLesson(index);
+                    }
+                  }
+                },
               ),
             );
           },

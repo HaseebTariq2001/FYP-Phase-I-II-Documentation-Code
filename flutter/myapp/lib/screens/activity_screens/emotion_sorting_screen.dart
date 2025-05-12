@@ -1,18 +1,24 @@
-// new additions
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class EmotionSortingScreen extends StatefulWidget {
-  const EmotionSortingScreen({Key? key}) : super(key: key);
+  final String title; // Added to receive activity title
+  final String skill; // Added to receive skill category
+
+  const EmotionSortingScreen({
+    Key? key,
+    required this.title,
+    required this.skill,
+  }) : super(key: key);
 
   @override
   State<EmotionSortingScreen> createState() => _EmotionSortingScreenState();
 }
-
-// Only relevant changes shown below with comments
 
 class _EmotionSortingScreenState extends State<EmotionSortingScreen>
     with SingleTickerProviderStateMixin {
@@ -30,10 +36,10 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
 
   final List<String> goodFeelings = [];
   final List<String> badFeelings = [];
+  // Added to store responses for result dialog
+  List<Map<String, dynamic>> responses = [];
 
-  bool showNextButton = false;
   bool questionSpoken = false;
-
   List<String> remainingEmotions = [];
   String? currentEmotion;
   AnimationController? _animationController;
@@ -42,7 +48,6 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
   @override
   void initState() {
     super.initState();
-    // ✅ Shuffle the emotion keys for random order
     remainingEmotions = emotions.keys.toList()..shuffle();
     _setNextEmotion();
 
@@ -51,7 +56,6 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
       vsync: this,
     );
 
-    // ✅ Slide in from left to center (Offset(0,0))
     _slideAnimation = Tween<Offset>(
       begin: Offset(-1, 0),
       end: Offset(0, 0),
@@ -68,16 +72,14 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
         currentEmotion = remainingEmotions.removeAt(0);
       });
 
-      // Start animation after widget has been built
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _animationController?.forward(from: 0);
       });
     } else {
       currentEmotion = null;
-      if (_isAllCorrect()) {
-        _playSound('cheer-up.mp3');
-        _showCongratsDialog();
-      }
+      _playSound('cheer-up.mp3');
+      _saveProgress(); // Save score to database
+      _showResultDialog(); // Show results
     }
   }
 
@@ -97,47 +99,105 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
 
   void _handleDrop(String emotionKey, String targetBox) {
     final correctBox = emotions[emotionKey];
+    final isCorrect = correctBox == targetBox;
 
-    if (correctBox == targetBox) {
-      _playSound('positive-answer.mp3');
+    _playSound(isCorrect ? 'positive-answer.mp3' : 'wrong-answer.mp3');
 
-      setState(() {
-        if (targetBox == 'good') {
-          goodFeelings.add(emotionKey);
-        } else {
-          badFeelings.add(emotionKey);
-        }
+    setState(() {
+      if (targetBox == 'good') {
+        goodFeelings.add(emotionKey);
+      } else {
+        badFeelings.add(emotionKey);
+      }
+      // Store response for result dialog
+      responses.add({
+        'emotion': emotionKey,
+        'sorted': targetBox,
+        'status': isCorrect ? 'Correct' : 'Incorrect',
       });
+    });
 
-      Future.delayed(Duration(milliseconds: 500), _setNextEmotion);
-    } else {
-      _playSound('wrong-answer.mp3');
-    }
+    Future.delayed(Duration(milliseconds: 500), _setNextEmotion);
   }
 
-  bool _isAllCorrect() {
-    for (var item in goodFeelings) {
-      if (emotions[item] != 'good') return false;
-    }
-    for (var item in badFeelings) {
-      if (emotions[item] != 'bad') return false;
-    }
-    return true;
+  // Added to save score to database
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final childId = prefs.getInt('child_id');
+
+    final correct = responses.where((r) => r['status'] == 'Correct').length;
+    final total = emotions.length;
+
+    await http.post(
+      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'child_id': childId,
+        'activity_name': widget.title,
+        'skill_category': widget.skill,
+        'correct_phrases': correct,
+        'total_phrases': total,
+      }),
+    );
   }
 
-  void _showCongratsDialog() {
-    setState(() => showNextButton = true);
+  // Added to show result dialog
+  void _showResultDialog() {
+    final correct = responses.where((r) => r['status'] == 'Correct').length;
+    final total = emotions.length;
 
     showDialog(
       context: context,
       builder:
-          (_) => AlertDialog(
-            title: Text("🎉 Great Job!"),
-            content: Text("You sorted all emotions correctly!"),
+          (context) => AlertDialog(
+            title: const Text("Activity Completed!"),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Score: $correct / $total",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 300,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children:
+                          responses.map((entry) {
+                            return ListTile(
+                              leading: Icon(
+                                entry['status'] == 'Correct'
+                                    ? Icons.check
+                                    : Icons.close,
+                                color:
+                                    entry['status'] == 'Correct'
+                                        ? Colors.green
+                                        : Colors.red,
+                              ),
+                              title: Text("Emotion: ${entry['emotion']}"),
+                              subtitle: Text("Sorted as: ${entry['sorted']}"),
+                              trailing: Text(entry['status']),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text("Continue"),
+                child: const Text("Done"),
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context, 'completed'); // Signal completion
+                },
               ),
             ],
           ),
@@ -162,7 +222,6 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
     );
   }
 
-  // ✅ New helper to build bordered draggable image
   Widget _buildDraggableImage(String emotionKey, {required double size}) {
     return Container(
       decoration: BoxDecoration(
@@ -193,8 +252,8 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
       onAccept: (data) => _handleDrop(data, targetBox),
       builder:
           (context, candidateData, rejectedData) => Container(
-            width: 150, // ✅ Increased box width
-            height: 260, // ✅ Increased box height
+            width: 150,
+            height: 260,
             padding: EdgeInsets.all(12),
             margin: EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -212,7 +271,6 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 10),
-                // ✅ Larger dropped image size
                 ...currentList.map(
                   (e) => Padding(
                     padding: const EdgeInsets.all(4.0),
@@ -236,19 +294,18 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
   void dispose() {
     tts.stop();
     audioPlayer.dispose();
-    _animationController?.dispose(); // ✅ dispose animation controller
+    _animationController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Emotion Sorting")),
+      appBar: AppBar(title: Text(widget.title)), // Use passed title
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            // ✅ Question cloud container
             Container(
               padding: EdgeInsets.all(16),
               margin: EdgeInsets.only(bottom: 20),
@@ -291,14 +348,9 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
                 ],
               ),
             ),
-
-            // ✅ Show only one draggable image at a time
             if (currentEmotion != null)
               Center(child: _buildDraggable(currentEmotion!)),
-
             SizedBox(height: 20),
-
-            // Drop targets
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -306,19 +358,6 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
                 _buildDropTarget("Bad Feelings", "bad", badFeelings),
               ],
             ),
-
-            SizedBox(height: 20),
-
-            // Next button
-            if (showNextButton)
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(
-                    context,
-                  ).pop(); // Update this to push for next screen
-                },
-                child: Text("Next"),
-              ),
           ],
         ),
       ),

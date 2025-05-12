@@ -1,8 +1,15 @@
-// ignore_for_file: file_names, use_key_in_widget_constructors, library_private_types_in_public_api
+// // ignore_for_file: file_names, use_key_in_widget_constructors, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/Learning%20and%20lesson/child_dashboard_screen.dart';
+import 'package:myapp/screens/activity_screens/emotion_sorting_screen.dart'
+    show EmotionSortingScreen;
+import 'package:myapp/screens/activity_screens/tap_good_activity.dart'
+    show TapGoodBehaviorActivityScreen;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myapp/screens/activity_screens/match_emotion_activity_screen.dart'; // Import activity screen
+import 'package:myapp/screens/activity_screens/emotion_sorting_screen.dart'; // Import activity screen
+import 'package:myapp/screens/activity_screens/tap_good_activity.dart'; // Import activity screen
 
 class BehavioralSkillsActivityScreen extends StatefulWidget {
   @override
@@ -15,22 +22,31 @@ class _BehavioralSkillsScreenState
     {
       'title': 'Understanding Emotions',
       'subtitle': 'Activity 1',
+      'skill': 'Behavioral',
       'image': 'assets/images/multiple-emotions-kids.jpeg',
-      'route': '/BehavioralActivities',
-      'locked': false, // First lesson is always unlocked
+      'screen':
+          (String title, String skill) =>
+              MatchEmotionActivityScreen(title: title, skill: skill),
+      'locked': true,
     },
     {
       'title': 'Emotion Sorting',
       'subtitle': 'Activity 2',
+      'skill': 'Behavioral',
       'image': 'assets/images/Recognizing-Behavior.jpeg',
-      'route': '/emotionsortingActivity',
+      'screen':
+          (String title, String skill) =>
+              EmotionSortingScreen(title: title, skill: skill),
       'locked': true,
     },
     {
       'title': 'Tap Good Behavior',
       'subtitle': 'Activity 3',
+      'skill': 'Behavioral',
       'image': 'assets/images/saying-thanks.jpeg',
-      'route': '/tapgoodactivity',
+      'screen':
+          (String title, String skill) =>
+              TapGoodBehaviorActivityScreen(title: title, skill: skill),
       'locked': true,
     },
   ];
@@ -41,52 +57,30 @@ class _BehavioralSkillsScreenState
     _loadLessonStates();
   }
 
-  // Load lesson states from SharedPreferences
+  // Load activity unlock states based on corresponding lesson completion
   Future<void> _loadLessonStates() async {
     final prefs = await SharedPreferences.getInstance();
+
     for (int i = 0; i < lessons.length; i++) {
-      // Skip the first lesson as it's always unlocked
-      if (i > 0) {
-        final isUnlocked = prefs.getBool('lesson_$i') ?? false;
-        setState(() {
-          lessons[i]['locked'] = !isUnlocked;
-        });
-      }
+      final lessonCompleted = prefs.getBool('lesson_${i}_completed') ?? false;
+      lessons[i]['locked'] = !lessonCompleted;
     }
-  }
 
-  // Save lesson state to SharedPreferences when unlocked
-  Future<void> _saveLessonState(int lessonIndex) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('lesson_$lessonIndex', true);
-  }
-
-  void unlockNextLesson(int currentIndex) {
-    if (currentIndex + 1 < lessons.length &&
-        lessons[currentIndex + 1]['locked']) {
-      setState(() {
-        lessons[currentIndex + 1]['locked'] = false;
-      });
-      // Save the unlocked state
-      _saveLessonState(currentIndex + 1);
-    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple, // Purple background
-        centerTitle: true, // Center the title
+        backgroundColor: Colors.deepPurple,
+        centerTitle: true,
         title: const Text(
           "Behavioral Skills",
-          style: TextStyle(color: Colors.white), // White text
+          style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ), // White back icon
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -105,19 +99,35 @@ class _BehavioralSkillsScreenState
           return GestureDetector(
             onTap: () async {
               if (!isLocked) {
-                // Wait for result from the lesson screen
-                final result = await Navigator.pushNamed(
-                  context,
-                  lesson['route'],
-                  arguments: {
-                    'title': lesson['title'],
-                    'onComplete': () => unlockNextLesson(index),
-                  },
-                );
+                // Check if screen function exists to prevent null call
+                if (lesson['screen'] != null) {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => lesson['screen'](
+                            lesson['title'],
+                            lesson['skill'],
+                          ),
+                    ),
+                  );
 
-                // Check if user completed the lesson
-                if (result == 'completed') {
-                  unlockNextLesson(index);
+                  // Handle completion signal
+                  if (result == 'completed') {
+                    _loadLessonStates(); // Refresh the list
+                  }
+                } else {
+                  // Log error for debugging
+                  print(
+                    'Error: screen function is null for ${lesson['title']}',
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Activity not available: ${lesson['title']}',
+                      ),
+                    ),
+                  );
                 }
               }
             },

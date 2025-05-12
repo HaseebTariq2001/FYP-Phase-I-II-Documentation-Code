@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
+import 'package:shared_preferences/shared_preferences.dart'
+    show SharedPreferences;
 import 'Learning and lesson/child_dashboard_screen.dart';
 import 'create_account_screen.dart';
 import 'add_child_profile_screen.dart';
@@ -134,45 +135,46 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-/// ✅ NEW Updated function to also save child_id after successful login
-Future<bool> _verifyChildLoginLocally(String name, String password) async {
-  // final url = Uri.parse('http://192.168.1.6:8000/api/verify_child_login');
-  // final url = Uri.parse('http://127.0.0.1:8000/api/verify_child_login');
-  final url = Uri.parse('http://100.64.32.53:8000/api/verify_child_login');
+  /// ✅ NEW Updated function to also save child_id after successful login
+  Future<bool> _verifyChildLoginLocally(String name, String password) async {
+    final url = Uri.parse('http://192.168.1.6:8000/api/verify_child_login');
+    // final url = Uri.parse('http://127.0.0.1:8000/api/verify_child_login');
+    // final url = Uri.parse('http://100.64.32.53:8000/api/verify_child_login');
 
-  try {
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'name': name, 'password': password}),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'name': name, 'password': password}),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-      /// ✅ Check if login was successful
-      if (data['success'] == true) {
-        final childId = data['id'];   /// 👈 Get child_id from backend response
+        /// ✅ Check if login was successful
+        if (data['success'] == true) {
+          final childId = data['id'];
 
-        /// ✅ Save child_id in SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('child_id', childId);
+          /// 👈 Get child_id from backend response
 
-        debugPrint("Child ID saved: $childId");
+          /// ✅ Save child_id in SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('child_id', childId);
 
-        return true;
+          debugPrint("Child ID saved: $childId");
+
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-    } else {
+    } catch (e) {
+      debugPrint('Error verifying child login: $e');
       return false;
     }
-  } catch (e) {
-    debugPrint('Error verifying child login: $e');
-    return false;
   }
-}
-
 
   Future<void> _signInWithGoogle() async {
     try {

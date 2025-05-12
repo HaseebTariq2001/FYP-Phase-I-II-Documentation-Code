@@ -368,6 +368,23 @@ def get_progress(child_id):
         print("❌ Error fetching progress:", e)
         return jsonify({'message': 'Error fetching progress'}), 500
 
+@app.route('/submit_feedback', methods=['POST'])
+def submit_feedback():
+    data = request.get_json()
+    message = data.get('message')
+
+    if not message:
+        return jsonify({'status': 'error', 'message': 'Message cannot be empty'}), 400
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO feedback (message) VALUES (%s)", (message,))
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'status': 'success', 'message': 'Feedback submitted successfully'})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': 'Database error'}), 500
 
 
 if __name__ == "__main__":

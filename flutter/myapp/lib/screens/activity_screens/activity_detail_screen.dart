@@ -212,13 +212,13 @@
 // saira code below
 
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/Learning%20and%20lesson/child_dashboard_screen.dart' show LearningTabScreen;
+import 'package:myapp/screens/Learning%20and%20lesson/child_dashboard_screen.dart'
+    show LearningTabScreen;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'activity_screen.dart';
 
 class ActivityDetailScreen extends StatefulWidget {
-
-  const ActivityDetailScreen();   // ✅ NEW
+  const ActivityDetailScreen(); // ✅ NEW
 
   @override
   _ActivityDetailScreenState createState() => _ActivityDetailScreenState();
@@ -231,8 +231,14 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
       'skill': "Communicational",
       'image': 'assets/images/greeting.jpg',
       'phrases': [
-        "Hello", "Good morning", "How are you?", "I am fine, thank you",
-        "What’s your name?", "My name is Alex", "Nice to meet you", "See you later"
+        "Hello",
+        "Good morning",
+        "How are you?",
+        "I am fine, thank you",
+        "What’s your name?",
+        "My name is Alex",
+        "Nice to meet you",
+        "See you later",
       ],
     },
     {
@@ -240,8 +246,14 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
       'skill': "Communicational",
       'image': 'assets/images/asking_for_help.png',
       'phrases': [
-        "Can you help me?", "I need help", "Please open this", "I don’t understand",
-        "Can you tie my shoes?", "Please pass that to me", "I need a teacher", "Can you show me how to do it?"
+        "Can you help me?",
+        "I need help",
+        "Please open this",
+        "I don’t understand",
+        "Can you tie my shoes?",
+        "Please pass that to me",
+        "I need a teacher",
+        "Can you show me how to do it?",
       ],
     },
     {
@@ -249,8 +261,14 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
       'skill': "Communicational",
       'image': 'assets/images/expressing_needs.webp',
       'phrases': [
-        "I want juice", "I am hungry", "I need to go to the bathroom", "I want to sit down",
-        "I need to take a break", "I feel tired", "I want to go home", "I want my toy"
+        "I want juice",
+        "I am hungry",
+        "I need to go to the bathroom",
+        "I want to sit down",
+        "I need to take a break",
+        "I feel tired",
+        "I want to go home",
+        "I want my toy",
       ],
     },
     {
@@ -258,8 +276,14 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
       'skill': "Communicational",
       'image': 'assets/images/expressing_emotions.jpg',
       'phrases': [
-        "I feel happy", "I am sad", "I am angry", "I am scared",
-        "I am excited", "I feel nervous", "I feel sleepy", "That made me upset"
+        "I feel happy",
+        "I am sad",
+        "I am angry",
+        "I am scared",
+        "I am excited",
+        "I feel nervous",
+        "I feel sleepy",
+        "That made me upset",
       ],
     },
     {
@@ -267,8 +291,14 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
       'skill': "Communicational",
       'image': 'assets/images/talking_with_friends.jpg',
       'phrases': [
-        "Can I play with you?", "Let’s play together", "That’s my turn", "Good job!",
-        "I like your toy", "Let’s build something", "Do you want to play again?", "You go first"
+        "Can I play with you?",
+        "Let’s play together",
+        "That’s my turn",
+        "Good job!",
+        "I like your toy",
+        "Let’s build something",
+        "Do you want to play again?",
+        "You go first",
       ],
     },
   ];
@@ -291,26 +321,28 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   void _handleLessonTap(int index) {
     if (index >= unlockedLesson) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please complete the previous lesson first.")),
+        const SnackBar(content: Text("Please complete the lesson first.")),
       );
     } else {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ActivityScreen(
-           
-            title: lessons[index]['title'],
-            skill: lessons[index]['skill'],
-            phrases: List<String>.from(lessons[index]['phrases']),
-          ),
+          builder:
+              (context) => ActivityScreen(
+                title: lessons[index]['title'],
+                skill: lessons[index]['skill'],
+                phrases: List<String>.from(lessons[index]['phrases']),
+              ),
         ),
       ).then((_) async {
         final prefs = await SharedPreferences.getInstance();
-        final key = "activity_score_${lessons[index]['title'].replaceAll(" ", "_")}";
+        final key =
+            "activity_score_${lessons[index]['title'].replaceAll(" ", "_")}";
         final score = prefs.getString(key) ?? "";
         if (score.isNotEmpty) {
           final parts = score.split('/');
-          if (parts.length == 2 && int.tryParse(parts[0]) == int.tryParse(parts[1])) {
+          if (parts.length == 2 &&
+              int.tryParse(parts[0]) == int.tryParse(parts[1])) {
             if (unlockedLesson == index + 1) {
               await prefs.setInt('unlockedLesson', unlockedLesson + 1);
               setState(() => unlockedLesson = unlockedLesson + 1);
@@ -324,16 +356,17 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar( backgroundColor: Colors.deepPurple, // Purple background
+      appBar: AppBar(
+        backgroundColor: Colors.deepPurple, // Purple background
         centerTitle: true, // Center the title
         title: const Text(
           "Communicational Skills",
-          style: TextStyle(color: Colors.white),
-          ), // White text,
-      leading: IconButton(
-          icon: const Icon( 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ), // White text,
+        leading: IconButton(
+          icon: const Icon(
             Icons.arrow_back,
-            color: Colors.black,
+            color: Colors.white,
           ), // White back icon
           onPressed: () {
             Navigator.pushReplacement(
@@ -353,8 +386,13 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
           return Card(
             elevation: 3,
             margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: isLocked ? Colors.grey[200] : const Color.fromARGB(255, 183, 58, 177),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            color:
+                isLocked
+                    ? Colors.grey[200]
+                    : const Color.fromARGB(255, 183, 58, 177),
             child: ListTile(
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -367,11 +405,15 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
               ),
               title: Text(
                 "Activity ${index + 1}",
-                style: TextStyle(color: isLocked ? Colors.black54 : Colors.white),
+                style: TextStyle(
+                  color: isLocked ? Colors.black54 : Colors.white,
+                ),
               ),
               subtitle: Text(
                 lesson['title'],
-                style: TextStyle(color: isLocked ? Colors.black45 : Colors.white70),
+                style: TextStyle(
+                  color: isLocked ? Colors.black45 : Colors.white70,
+                ),
               ),
               trailing: Icon(
                 isLocked ? Icons.lock_outline : Icons.play_arrow,
@@ -385,5 +427,3 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
     );
   }
 }
-
-

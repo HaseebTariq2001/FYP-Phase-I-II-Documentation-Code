@@ -6,8 +6,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'Learning and lesson/child_dashboard_screen.dart';
 import 'chat_screen.dart';
 import 'child_profile_management_list.dart';
+import 'feedback_screen.dart';
 import 'progress_report_screen.dart';
 import '../widgets/app_header.dart';
+import 'settings.dart' show SettingsScreen;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -274,7 +276,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Settings',
                     style: TextStyle(color: primaryColor),
                   ),
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                Container(height: 2, color: primaryColor),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: SvgPicture.asset(
+                    'assets/images/feedback.svg',
+                    height: 30,
+                    width: 30,
+                    colorFilter: ColorFilter.mode(
+                      primaryColor,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  title: Text(
+                    'Feedback',
+                    style: TextStyle(color: primaryColor),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const FeedbackScreen()),
+                    );
+                  },
                 ),
                 Container(height: 2, color: primaryColor),
               ],

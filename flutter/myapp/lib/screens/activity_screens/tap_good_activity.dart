@@ -2,8 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class TapGoodBehaviorActivityScreen extends StatefulWidget {
+  final String title; // Added to receive activity title
+  final String skill; // Added to receive skill category
+
+  const TapGoodBehaviorActivityScreen({
+    Key? key,
+    required this.title,
+    required this.skill,
+  }) : super(key: key);
+
   @override
   State<TapGoodBehaviorActivityScreen> createState() =>
       _TapGoodBehaviorActivityScreenState();
@@ -16,8 +28,8 @@ class _TapGoodBehaviorActivityScreenState
   bool hasSpoken = false;
 
   int currentScreen = 0;
-  int correctAnswers = 0;
-  List<bool> screenCompletedCorrectly = [];
+  List<Map<String, dynamic>> responses = []; // Added to store responses
+  List<int> selectedIndexes = [];
 
   final List<Map<String, dynamic>> screens = [
     {
@@ -58,12 +70,11 @@ class _TapGoodBehaviorActivityScreenState
     },
   ];
 
-  List<int> selectedIndexes = [];
-
   @override
   void initState() {
     super.initState();
-    screenCompletedCorrectly = List.filled(screens.length, false);
+    // Removed screenCompletedCorrectly as it's no longer needed
+    speak(screens[currentScreen]["question"]); // Speak initial question
   }
 
   void speak(String text) async {
@@ -91,31 +102,103 @@ class _TapGoodBehaviorActivityScreenState
 
     setState(() {
       selectedIndexes.add(index);
+      // Store response
+      responses.add({
+        'screen': screens[currentScreen]["question"],
+        'image': screens[currentScreen]["options"][index]["image"],
+        'isGood': isGood,
+        'status': isGood ? 'Correct' : 'Incorrect',
+      });
     });
   }
 
+  // Added to save score to database
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final childId = prefs.getInt('child_id');
+
+    final correct = responses.where((r) => r['status'] == 'Correct').length;
+    final total = responses.length;
+
+    await http.post(
+      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'child_id': childId,
+        'activity_name': widget.title,
+        'skill_category': widget.skill,
+        'correct_phrases': correct,
+        'total_phrases': total,
+      }),
+    );
+  }
+
+  // Added to show result dialog
+  void _showResultDialog() {
+    final correct = responses.where((r) => r['status'] == 'Correct').length;
+    final total = responses.length;
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Activity Completed!"),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Score: $correct / $total",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 300,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children:
+                          responses.map((entry) {
+                            return ListTile(
+                              leading: Icon(
+                                entry['status'] == 'Correct'
+                                    ? Icons.check
+                                    : Icons.close,
+                                color:
+                                    entry['status'] == 'Correct'
+                                        ? Colors.green
+                                        : Colors.red,
+                              ),
+                              title: Text("Screen: ${entry['screen']}"),
+                              subtitle: Text(
+                                "Image: ${entry['image'].split('/').last}",
+                              ),
+                              trailing: Text(entry['status']),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Done"),
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context, 'completed'); // Signal completion
+                },
+              ),
+            ],
+          ),
+    );
+  }
+
   void goToNextScreen() {
-    final options = screens[currentScreen]["options"];
-    final correctIndexes =
-        options
-            .asMap()
-            .entries
-            .where((entry) => entry.value["isGood"] == true)
-            .map((entry) => entry.key)
-            .toList();
-
-    final allCorrectTapped = correctIndexes.every(
-      (index) => selectedIndexes.contains(index),
-    );
-    final anyWrongTapped = selectedIndexes.any(
-      (index) => options[index]["isGood"] == false,
-    );
-
-    if (allCorrectTapped && !anyWrongTapped) {
-      correctAnswers++;
-      screenCompletedCorrectly[currentScreen] = true;
-    }
-
     flutterTts.stop();
 
     if (currentScreen < screens.length - 1) {
@@ -125,48 +208,9 @@ class _TapGoodBehaviorActivityScreenState
         hasSpoken = false;
       });
     } else {
-      bool allCorrect = screenCompletedCorrectly.every((c) => c);
-      if (allCorrect) playCompletionSound();
-
-      showDialog(
-        context: context,
-        builder:
-            (_) => AlertDialog(
-              title: Text(allCorrect ? "🎉 Great job!" : "Try Again"),
-              content: Text(
-                allCorrect
-                    ? "You tapped all the good behaviors correctly!"
-                    : "Oops! You missed some good behaviors.",
-              ),
-              actions: [
-                if (allCorrect)
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                    child: Text("Finish"),
-                  ),
-                if (!allCorrect)
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        currentScreen = 0;
-                        selectedIndexes.clear();
-                        hasSpoken = false;
-                        correctAnswers = 0;
-                        screenCompletedCorrectly = List.filled(
-                          screens.length,
-                          false,
-                        );
-                      });
-                    },
-                    child: Text("Retry"),
-                  ),
-              ],
-            ),
-      );
+      playCompletionSound();
+      _saveProgress(); // Save score
+      _showResultDialog(); // Show results
     }
   }
 
@@ -177,7 +221,7 @@ class _TapGoodBehaviorActivityScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Tap the Good Behavior"),
+        title: Text(widget.title), // Use passed title
         backgroundColor: Colors.orangeAccent,
       ),
       body: Padding(
@@ -188,7 +232,11 @@ class _TapGoodBehaviorActivityScreenState
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset('assets/images/question-ask.png', width: 60, height: 60),
+                Image.asset(
+                  'assets/images/question-ask.png',
+                  width: 60,
+                  height: 60,
+                ),
                 SizedBox(width: 10),
                 Expanded(
                   child: Container(
@@ -198,7 +246,7 @@ class _TapGoodBehaviorActivityScreenState
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: AnimatedTextKit(
-                      key: ValueKey(currentScreen), // 👈 Fix for TTS
+                      key: ValueKey(currentScreen),
                       animatedTexts: [
                         TypewriterAnimatedText(
                           question,
@@ -221,7 +269,6 @@ class _TapGoodBehaviorActivityScreenState
                 ),
               ],
             ),
-
             SizedBox(height: 24),
 
             /// 🖼 Image Grid
@@ -279,47 +326,35 @@ class _TapGoodBehaviorActivityScreenState
             ),
 
             /// ✅ Next Button
-            Builder(
-              builder: (context) {
-                final options = screen["options"];
-                final correctIndexes =
-                    options
-                        .asMap()
-                        .entries
-                        .where((entry) => entry.value["isGood"] == true)
-                        .map((entry) => entry.key)
-                        .toList();
-
-                final allCorrectTapped = correctIndexes.every(
-                  (index) => selectedIndexes.contains(index),
-                );
-                final anyWrongTapped = selectedIndexes.any(
-                  (index) => options[index]["isGood"] == false,
-                );
-                final canProceed = allCorrectTapped && !anyWrongTapped;
-
-                return Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: ElevatedButton.icon(
-                    onPressed: canProceed ? () => goToNextScreen() : null,
-                    icon: Icon(Icons.arrow_forward),
-                    label: Text("Next"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          canProceed ? Colors.orangeAccent : Colors.grey,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 100,
-                        vertical: 12,
-                      ),
-                      textStyle: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                );
-              },
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: ElevatedButton.icon(
+                onPressed:
+                    selectedIndexes.isNotEmpty
+                        ? () => goToNextScreen()
+                        : null, // Enable Next if any selection made
+                icon: Icon(Icons.arrow_forward),
+                label: Text("Next"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      selectedIndexes.isNotEmpty
+                          ? Colors.orangeAccent
+                          : Colors.grey,
+                  padding: EdgeInsets.symmetric(horizontal: 100, vertical: 12),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    audioPlayer.dispose();
+    super.dispose();
   }
 }

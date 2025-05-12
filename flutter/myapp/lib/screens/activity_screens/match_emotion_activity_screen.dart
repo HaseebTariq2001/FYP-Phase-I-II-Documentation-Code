@@ -1,13 +1,21 @@
-// Adding if statement for completion and type writer style
-
-// ignore_for_file: file_names, use_key_in_widget_constructors, library_private_types_in_public_api, sort_child_properties_last
-
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class MatchEmotionActivityScreen extends StatefulWidget {
+  final String title; // Added to receive activity title
+  final String skill; // Added to receive skill category
+
+  const MatchEmotionActivityScreen({
+    Key? key,
+    required this.title,
+    required this.skill,
+  }) : super(key: key);
+
   @override
   _MatchEmotionActivityScreenState createState() =>
       _MatchEmotionActivityScreenState();
@@ -17,7 +25,7 @@ class _MatchEmotionActivityScreenState
     extends State<MatchEmotionActivityScreen> {
   final AudioPlayer audioPlayer = AudioPlayer();
   final FlutterTts flutterTts = FlutterTts();
-  bool hasSpoken = false; // ✅ Correct location inside the State class
+  bool hasSpoken = false;
 
   final List<Map<String, dynamic>> questions = [
     {
@@ -67,6 +75,8 @@ class _MatchEmotionActivityScreenState
   bool isAnswered = false;
   String selectedOption = '';
   bool showText = false;
+  // Added to store responses for result dialog
+  List<Map<String, dynamic>> responses = [];
 
   @override
   void initState() {
@@ -89,47 +99,122 @@ class _MatchEmotionActivityScreenState
   }
 
   void speakQuestion(String text) async {
-    // await flutterTts.setSpeechRate(0.5);
-    // await flutterTts.speak(text);
-    await flutterTts.stop(); // ⛔️ Cancel any ongoing speech
+    await flutterTts.stop();
     await flutterTts.setSpeechRate(0.5);
     await flutterTts.setPitch(1.0);
-    await flutterTts.speak(text); // ✅ Speak immediately
+    await flutterTts.speak(text);
   }
 
-  // ✨ Added method to restart activity from the beginning
-  void restartActivity() {
-    setState(() {
-      currentQuestion = 0;
-      correctAnswers = 0;
-      isAnswered = false;
-      selectedOption = '';
-      showText = false;
-    });
-    Future.delayed(Duration(milliseconds: 800), () {
-      setState(() {
-        showText = true;
-      });
-    });
-  }
+  // Removed restartActivity as it's no longer needed with new submission logic
 
   void checkAnswer(String option) {
     if (isAnswered) return;
 
-    flutterTts.stop(); // ✅ Cancel TTS if user selects an option early
+    flutterTts.stop();
+
+    final isCorrect = option == questions[currentQuestion]['correct'];
 
     setState(() {
       selectedOption = option;
       isAnswered = true;
+      if (isCorrect) correctAnswers++;
+      // Store response for result dialog
+      responses.add({
+        'expected': questions[currentQuestion]['emotion'],
+        'selected': option,
+        'status': isCorrect ? 'Correct' : 'Incorrect',
+      });
     });
 
-    final isCorrect = option == questions[currentQuestion]['correct'];
-    if (isCorrect) correctAnswers++;
     playSound(isCorrect);
   }
 
+  // Added to save score to database
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final childId = prefs.getInt('child_id');
+
+    final correct = correctAnswers;
+    final total = questions.length;
+
+    await http.post(
+      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'child_id': childId,
+        'activity_name': widget.title,
+        'skill_category': widget.skill,
+        'correct_phrases': correct,
+        'total_phrases': total,
+      }),
+    );
+  }
+
+  // Added to show result dialog
+  void _showResultDialog() {
+    final correct = correctAnswers;
+    final total = questions.length;
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Activity Completed!"),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Score: $correct / $total",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 300,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children:
+                          responses.map((entry) {
+                            return ListTile(
+                              leading: Icon(
+                                entry['status'] == 'Correct'
+                                    ? Icons.check
+                                    : Icons.close,
+                                color:
+                                    entry['status'] == 'Correct'
+                                        ? Colors.green
+                                        : Colors.red,
+                              ),
+                              title: Text("Expected: ${entry['expected']}"),
+                              subtitle: Text("Selected: ${entry['selected']}"),
+                              trailing: Text(entry['status']),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Done"),
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context, 'completed'); // Signal completion
+                },
+              ),
+            ],
+          ),
+    );
+  }
+
   void nextQuestion() {
-    flutterTts.stop(); // ✅ Stop any ongoing TTS
+    flutterTts.stop();
 
     if (!isAnswered) return;
 
@@ -146,41 +231,9 @@ class _MatchEmotionActivityScreenState
         });
       });
     } else {
-      final allCorrect = correctAnswers == questions.length;
-      if (allCorrect) {
-        playCompletionSound(); // ✅ Only play if all answers are correct
-      }
-
-      showDialog(
-        context: context,
-        builder:
-            (_) => AlertDialog(
-              title: Text(allCorrect ? "🎉 Great job!" : "Oops!"),
-              content: Text(
-                allCorrect
-                    ? "You've completed the activity correctly!"
-                    : "Please try again and choose the correct answers.",
-              ),
-              actions: [
-                if (allCorrect)
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close dialog
-                      Navigator.pop(context); // 👈 Go back to activity list
-                    },
-                    child: Text("Finish"),
-                  ),
-                if (!allCorrect)
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      restartActivity(); // Retry if not all correct
-                    },
-                    child: Text("Retry"),
-                  ),
-              ],
-            ),
-      );
+      playCompletionSound();
+      _saveProgress(); // Save score to database
+      _showResultDialog(); // Show results
     }
   }
 
@@ -191,7 +244,7 @@ class _MatchEmotionActivityScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Match the Emotion"),
+        title: Text(widget.title), // Use passed title
         backgroundColor: Colors.orangeAccent,
       ),
       body: Padding(
@@ -240,8 +293,7 @@ class _MatchEmotionActivityScreenState
                                 }
                               },
                               onFinished: () {
-                                hasSpoken =
-                                    false; // Reset so next question can speak again
+                                hasSpoken = false;
                               },
                             )
                             : SizedBox(height: 20),
@@ -293,7 +345,6 @@ class _MatchEmotionActivityScreenState
                                   ),
                                 ),
                               ),
-                              // ✅ ✔️ Tick or ❌ Cross Icon (only show when selected)
                               if (isSelected)
                                 Positioned(
                                   top: 8,
@@ -320,7 +371,9 @@ class _MatchEmotionActivityScreenState
               padding: const EdgeInsets.only(top: 12.0),
               child: ElevatedButton(
                 onPressed: nextQuestion,
-                child: Text("Next"),
+                child: Text(
+                  currentQuestion < questions.length - 1 ? "Next" : "Submit",
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepOrange,
                   foregroundColor: Colors.white,

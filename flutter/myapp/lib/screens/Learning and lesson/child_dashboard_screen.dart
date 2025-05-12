@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:myapp/screens/Learning and lesson/course_detail_screen.dart';
 import 'package:myapp/screens/Learning and lesson/behavioral_skill_lesson_screen.dart';
 import 'package:myapp/screens/Learning and lesson/routine_submodule_screen.dart';
@@ -8,9 +11,19 @@ import 'package:myapp/screens/activity_screens/activity_detail_screen.dart';
 import 'package:myapp/screens/activity_screens/behavior_activity_list.dart';
 
 import '../progress_report_screen.dart' show ProgressReportScreen;
-// import 'package:myapp/screens/activity_screens/activity_detail_screen.dart';
 
 class LearningTabScreen extends StatelessWidget {
+  Future<Map<String, dynamic>> fetchChildData(String name) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.1.6:8000/child/$name'),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load child data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -20,7 +33,7 @@ class LearningTabScreen extends StatelessWidget {
           leading: Builder(
             builder:
                 (context) => IconButton(
-                  icon: Icon(Icons.menu),
+                  icon: Icon(Icons.menu, color: Colors.white),
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
                   },
@@ -45,48 +58,91 @@ class LearningTabScreen extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
+              // DrawerHeader(
+              //   decoration: BoxDecoration(color: Colors.blue),
+              //   child: Column(
+              //     children: [
+              //       Image.asset(
+              //         'assets/images/logo_pic.png',
+              //         height: 100,
+              //         width: 100,
+              //         fit: BoxFit.contain,
+              //       ),
+
+              //       const SizedBox(width: 8),
+
+              //       Text(
+              //         'EDUCARE',
+              //         style: TextStyle(
+              //           color: Colors.white,
+              //           fontSize: 24,
+              //           fontWeight: FontWeight.bold,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               DrawerHeader(
                 decoration: BoxDecoration(color: Colors.blue),
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo_pic.png',
-                      height: 100,
-                      width: 100,
-                      fit: BoxFit.contain,
-                    ),
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: fetchChildData(
+                    "waheed",
+                  ), // Replace with actual name variable
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(color: Colors.white);
+                    } else if (snapshot.hasError) {
+                      return Text(
+                        'Error loading profile',
+                        style: TextStyle(color: Colors.white),
+                      );
+                    } else if (!snapshot.hasData || snapshot.data == null) {
+                      return Text(
+                        'No profile found',
+                        style: TextStyle(color: Colors.white),
+                      );
+                    }
 
-                    const SizedBox(width: 8),
+                    final childData = snapshot.data!;
+                    final imageBytes = base64Decode(
+                      childData['image_blob'] ?? "",
+                    );
 
-                    Text(
-                      'EDUCARE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Settings'),
-                onTap: () {},
-              ),
-    
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Progress report'),
-                onTap: () {
-                    // Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProgressReportScreen(),
-                      ),
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage: MemoryImage(imageBytes),
+                          backgroundColor: Colors.white,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          childData['name'] ?? "Child Name",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     );
                   },
+                ),
+              ),
+
+              ListTile(
+                leading: Icon(Icons.stacked_bar_chart_sharp),
+                title: Text('Progress report'),
+                onTap: () {
+                  // Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProgressReportScreen(),
+                    ),
+                  );
+                },
               ),
               ListTile(
                 leading: Icon(Icons.logout),

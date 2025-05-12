@@ -152,7 +152,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           backgroundColor: Colors.deepPurple, // Purple background
           centerTitle: true, // Center the title
           title: const Text(
-            "Behavioral Skills",
+            "Communicational Skills",
             style: TextStyle(color: Colors.white), // White text
           ),
           leading: IconButton(
