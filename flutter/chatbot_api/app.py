@@ -2,6 +2,7 @@
 ###############################################################################################################################
 
 import datetime
+import threading
 from flask import Flask, request, jsonify
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 from sentence_transformers import SentenceTransformer
@@ -34,15 +35,50 @@ with app.app_context():
         print("❌ Failed to connect to the MySQL database:", e)
 
 # Load tokenizer and model
-tokenizer = AutoTokenizer.from_pretrained("tokenizer")
-model = AutoModelForQuestionAnswering.from_pretrained("model")
-embedding_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+# tokenizer = AutoTokenizer.from_pretrained("tokenizer")
+# model = AutoModelForQuestionAnswering.from_pretrained("model")
+# embedding_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
 
-# Load Q&A dataset
-df = pd.read_excel("autism_faqs.xlsx")
-questions = df["Question"].fillna("").tolist()
-answers = df["Answer"].fillna("").tolist()
-question_embeddings = embedding_model.encode(questions, convert_to_tensor=True)
+# # Load Q&A dataset
+# df = pd.read_excel("autism_faqs.xlsx")
+# questions = df["Question"].fillna("").tolist()
+# answers = df["Answer"].fillna("").tolist()
+# question_embeddings = embedding_model.encode(questions, convert_to_tensor=True)
+
+# Global variables for model and data
+tokenizer = None
+model = None
+embedding_model = None
+question_embeddings = None
+questions = None
+answers = None
+models_loaded = threading.Event()
+
+def initialize_models_and_data():
+    global tokenizer, model, embedding_model, question_embeddings, questions, answers
+    print("Loading models and data in background...")
+    try:
+        tokenizer = AutoTokenizer.from_pretrained("tokenizer")
+        model = AutoModelForQuestionAnswering.from_pretrained("model")
+        embedding_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+        
+        # Load Q&A dataset
+        df = pd.read_excel("autism_faqs.xlsx")
+        questions = df["Question"].fillna("").tolist()
+        answers = df["Answer"].fillna("").tolist()
+        question_embeddings = embedding_model.encode(questions, convert_to_tensor=True)
+        print("Models and data loaded successfully!")
+    except Exception as e:
+        print(f"Error loading models and data: {e}")
+    finally:
+        models_loaded.set()
+
+# Start model loading in a background thread
+with app.app_context():
+    threading.Thread(target=initialize_models_and_data, daemon=True).start()
+
+
+
 
 # Define CARS categories
 CARS_CATEGORIES = [
@@ -54,6 +90,15 @@ CARS_CATEGORIES = [
 
 @app.route("/chat", methods=["POST"])
 def chat():
+
+    # Wait for models to be loaded if not already
+    if not models_loaded.is_set():
+        print("Waiting for models to load...")
+        models_loaded.wait()
+    
+    if tokenizer is None or model is None or embedding_model is None:
+        return jsonify({"error": "Models failed to load. Please try again later."}), 500
+    
     data = request.get_json()
     user_question = data.get("message", "").lower().strip()
 
