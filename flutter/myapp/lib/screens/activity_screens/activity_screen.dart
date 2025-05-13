@@ -1,26 +1,29 @@
-// ignore_for_file: unused_local_variable
-
-// saira code below
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/Learning%20and%20lesson/child_dashboard_screen.dart'
     show LearningTabScreen;
+import 'package:myapp/screens/activity_screens/activity_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:myapp/services/notification_service.dart';   // ✅ NEW
+
 
 class ActivityScreen extends StatefulWidget {
   final String title;
   final String skill;
   final List<String> phrases;
 
-  const ActivityScreen({
-    super.key,
-    required this.title,
-    required this.skill,
-    required this.phrases,
-  });
+final int lessonIndex;                         // ✅ NEW: add this
+
+const ActivityScreen({
+  super.key,
+  required this.title,
+  required this.skill,
+  required this.phrases,
+  required this.lessonIndex,                   // ✅ NEW: add this
+});
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
@@ -36,6 +39,33 @@ class _ActivityScreenState extends State<ActivityScreen> {
   List<Map<String, String>> responses = [];
 
   String get currentPhrase => widget.phrases[currentIndex];
+
+// ✅ Add your initState here:
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   NotificationService.cancelReminder(widget.lessonIndex);   // ✅ NEW
+  // }
+  @override
+void initState() {
+  super.initState();
+
+  // ✅ Cancel reminder when activity starts
+  NotificationService.cancelReminder(widget.lessonIndex).then((_) {
+    // ✅ Show SnackBar for confirmation (for debug only)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("✅ Activity reminder cancelled successfully"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  });
+}
+
 
   Future<void> _startListening() async {
     if (isListening) {
@@ -149,9 +179,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final total = widget.phrases.length;
 
     await http.post(
-      // Uri.parse('http://127.0.0.1:8000/api/save-activity'),
-      // Uri.parse('http://100.64.32.53:8000/api/save-activity'),
-      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      Uri.parse('http://127.0.0.1:8000/api/save-activity'),
+      // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
+      // Uri.parse('http://192.168.1.6:8000/api/save-activity'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'child_id': childId,
@@ -228,7 +258,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     () => Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LearningTabScreen(),
+                        builder: (context) => ActivityDetailScreen(),
                       ),
                     ),
               ),
@@ -247,96 +277,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void dispose() {
     _speech.stop();
     super.dispose();
+    // NotificationService.cancelReminder(widget.lessonIndex); 
   }
-
-  //   @override
-  //   Widget build(BuildContext context) {
-  //     bool isLast = currentIndex == widget.phrases.length - 1;
-  //     double progress = (currentIndex + 1) / widget.phrases.length;
-
-  //     return Scaffold(
-  //       appBar: AppBar(title: Text(widget.title)),
-  //       body: Center(
-  //         child: Card(
-  //           elevation: 10,
-  //           color: Colors.deepPurple[50],
-  //           margin: const EdgeInsets.all(24),
-  //           shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(24),
-  //           ),
-  //           child: Padding(
-  //             padding: const EdgeInsets.all(24.0),
-  //             child: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: [
-  //                 LinearProgressIndicator(
-  //                   value: progress,
-  //                   minHeight: 8,
-  //                   backgroundColor: Colors.deepPurple.shade100,
-  //                   color: Colors.deepPurple,
-  //                   borderRadius: BorderRadius.circular(10),
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 Text(
-  //                   "Phrase ${currentIndex + 1} of ${widget.phrases.length}",
-  //                   style: TextStyle(fontSize: 18, color: Colors.grey[700]),
-  //                 ),
-  //                 const SizedBox(height: 12),
-  //                 Text(
-  //                   currentPhrase,
-  //                   textAlign: TextAlign.center,
-  //                   style: const TextStyle(
-  //                     fontSize: 28,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 30),
-  //                 ElevatedButton.icon(
-  //                   onPressed: isListening ? null : _startListening,
-  //                   icon: const Icon(Icons.mic),
-  //                   label: const Text("Speak Now"),
-  //                   style: ElevatedButton.styleFrom(
-  //                     backgroundColor: Colors.pink,
-  //                     foregroundColor: Colors.white,
-  //                     padding: const EdgeInsets.symmetric(
-  //                       horizontal: 24,
-  //                       vertical: 14,
-  //                     ),
-  //                     shape: const StadiumBorder(),
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 Text(
-  //                   "You said: \"$childResponse\"",
-  //                   style: const TextStyle(fontSize: 18),
-  //                 ),
-  //                 SizedBox(height: 8),
-  //                 Text(
-  //                   "Note: Once you speak, tap Next to move forward.",
-  //                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-  //                 ),
-  //                 const SizedBox(height: 30),
-  //                 ElevatedButton(
-  //                   onPressed: isLast ? _submitActivity : _nextPhrase,
-  //                   child: Text(isLast ? "Submit" : "Next"),
-  //                   style: ElevatedButton.styleFrom(
-  //                     backgroundColor: Colors.green,
-  //                     foregroundColor: Colors.white,
-  //                     padding: const EdgeInsets.symmetric(
-  //                       horizontal: 30,
-  //                       vertical: 14,
-  //                     ),
-  //                     shape: const StadiumBorder(),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -402,9 +344,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 ElevatedButton.icon(
                   onPressed: isListening ? null : _startListening,
                   icon: const Icon(Icons.mic),
-                  label: const Text("Speak Now"),
+                  label: const Text("Speak Now", style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
+                    backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -425,18 +369,24 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: isLast ? _submitActivity : _nextPhrase,
-                  child: Text(isLast ? "Submit" : "Next"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 14,
+                    onPressed: isLast ? _submitActivity : _nextPhrase,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 14,
+                      ),
+                      shape: const StadiumBorder(),
                     ),
-                    shape: const StadiumBorder(),
+                    child: Text(
+                      isLast ? "Submit" : "Next",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                         fontSize: 16,
+                      ),
+                    ),
                   ),
-                ),
               ],
             ),
           ),

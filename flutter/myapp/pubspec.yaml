@@ -44,6 +44,7 @@ dependencies:
   animated_text_kit: ^4.2.2
   cached_network_image: ^3.2.0
   open_file: ^3.2.1
+  flutter_local_notifications: ^17.1.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -101,8 +102,8 @@ flutter:
     - assets/images/cognitive_skills.png
     - assets/images/morning_routine.png
     - assets/images/going_to_school.png
-    # - assets/videos/morning_routine.mp4
-    # - assets/videos/going_to_school_routine.mp4
+    - assets/videos/morning_routine.mp4
+    - assets/videos/going_to_school_routine.mp4
     - assets/images/after_school_routine.png
     - assets/images/wake_up.png # 1st step of morning_routine
     - assets/images/brush_teeth.png # 2nd step of ***************
@@ -180,6 +181,7 @@ flutter:
     - assets/images/ignoring-child.jpg
     - assets/images/laughing-someone.jpeg
     - assets/images/feedback.svg
+    - assets/sounds/background_music.mp3
 
   # To add assets to your application, add an assets section, like this:
   # assets:

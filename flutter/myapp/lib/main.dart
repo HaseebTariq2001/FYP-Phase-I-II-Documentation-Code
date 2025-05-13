@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/screens/Learning%20and%20lesson/behavioral_lessons.dart';
+import 'package:myapp/services/background_music_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/create_account_screen.dart';
 import 'screens/login_screen.dart';
@@ -10,9 +11,14 @@ import 'screens/home_screen.dart';
 import 'screens/assessment_screen.dart';
 // import 'screens/Learning and lesson/';
 import 'firebase_options.dart';
+import 'package:myapp/services/notification_service.dart';    // ✅ add this line
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.initialize();    // ✅ Add this
+  await BackgroundMusicService().checkAndStartMusic(); 
+  // await BackgroundMusicService().checkAndPlayOnAppStart(); 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const EduBotApp());
 }
@@ -28,6 +34,7 @@ class EduBotApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       home: SplashScreen(),
       // home: ParentProfileScreen(),
+      //home: HomeScreen(),
       routes: {
         '/create_account': (context) => CreateAccountScreen(),
         '/login': (context) => LoginScreen(),
@@ -35,6 +42,7 @@ class EduBotApp extends StatelessWidget {
         '/assessment':
             (context) => AssessmentScreen(childName: ''), // default empty
         '/lessonDetail': (context) => BehaviorLessonScreen(),
+
       },
     );
   }

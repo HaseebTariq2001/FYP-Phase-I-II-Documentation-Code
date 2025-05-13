@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/screens/activity_screens/morning_routine_game_screen.dart';
+import 'package:myapp/screens/activity_screens/morning_routine_game.dart';
 
 class MorningRoutineScreen extends StatefulWidget {
   final String title;
@@ -10,6 +10,7 @@ class MorningRoutineScreen extends StatefulWidget {
   final String videoPath;
 
   const MorningRoutineScreen({
+    super.key,
     required this.title,
     required this.imagePath,
     required this.videoPath,
@@ -34,9 +35,11 @@ class _MorningRoutineScreenState extends State<MorningRoutineScreen> {
     _loadCompletionStatus();
 
     _controller.addListener(() {
-      if (_controller.value.position >= _controller.value.duration &&
+      if (_controller.value.isInitialized &&
+          _controller.value.position >= _controller.value.duration &&
           !_controller.value.isPlaying &&
-          !isCompleted) {
+          !isCompleted &&
+          !hasWatchedBefore) {     // ✅ extra condition
         setState(() {
           isCompleted = true;
         });
@@ -48,7 +51,7 @@ class _MorningRoutineScreenState extends State<MorningRoutineScreen> {
   Future<String> _getUserSpecificKey() async {
     final user = FirebaseAuth.instance.currentUser;
     final userId = user?.uid ?? 'guest';
-    return 'morning_routine_watched_${widget.title}_$userId';
+    return 'morning_routine_screen_watched_${widget.title}_$userId';
   }
 
   Future<void> _loadCompletionStatus() async {
@@ -82,25 +85,24 @@ class _MorningRoutineScreenState extends State<MorningRoutineScreen> {
   void _replayVideo() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder:
-            (_) => MorningRoutineScreen(
-              title: widget.title,
-              imagePath: widget.imagePath,
-              videoPath: widget.videoPath,
-            ),
+        builder: (_) => MorningRoutineScreen(
+          title: widget.title,
+          imagePath: widget.imagePath,
+          videoPath: widget.videoPath,
+        ),
       ),
     );
   }
 
   void _seekForward() {
-    final position = _controller.value.position + Duration(seconds: 5);
+    final position = _controller.value.position + const Duration(seconds: 5);
     if (position < _controller.value.duration) {
       _controller.seekTo(position);
     }
   }
 
   void _seekBackward() {
-    final position = _controller.value.position - Duration(seconds: 5);
+    final position = _controller.value.position - const Duration(seconds: 5);
     _controller.seekTo(position > Duration.zero ? position : Duration.zero);
   }
 
@@ -114,168 +116,159 @@ class _MorningRoutineScreenState extends State<MorningRoutineScreen> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child:
-              isCompleted
-                  ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "🎉 Great Job! You've completed the routine!",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
+          child: isCompleted
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "🎉 Great Job! You've completed the routine!",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 20),
-                      IconButton(
-                        icon: Icon(
-                          Icons.loop,
-                          size: 50,
-                          color: Colors.deepPurple,
-                        ),
-                        onPressed: _replayVideo,
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const MorningRoutineGameScreen(),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    IconButton(
+                      icon: const Icon(Icons.loop,
+                          size: 50, color: Colors.deepPurple),
+                      onPressed: _replayVideo,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MorningRoutineGameScreen(
+                              title: "Morning Routine Game",
+                              skill: "Cognitive",
                             ),
-                          );
-                        },
-                        child: Text("Move to Games"),
-                      ),
-                    ],
-                  )
-                  : isStarted
+                          ),
+                        );
+                      },
+                      child: const Text("Move to Games"),
+                    ),
+                  ],
+                )
+              : isStarted
                   ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _controller.value.isInitialized
-                          ? AspectRatio(
-                            aspectRatio: _controller.value.aspectRatio,
-                            child: Stack(
-                              alignment: Alignment.topRight,
-                              children: [
-                                VideoPlayer(_controller),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.fullscreen,
-                                    color: Colors.black,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) => FullScreenVideo(
-                                              playerController: _controller,
-                                            ),
-                                      ),
-                                    );
-                                  },
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _controller.value.isInitialized
+                            ? AspectRatio(
+                                aspectRatio: _controller.value.aspectRatio,
+                                child: Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    VideoPlayer(_controller),
+                                    IconButton(
+                                      icon: const Icon(Icons.fullscreen,
+                                          color: Colors.black),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => FullScreenVideo(
+                                                playerController: _controller),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          )
-                          : CircularProgressIndicator(),
-                      const SizedBox(height: 10),
-                      VideoProgressIndicator(
-                        _controller,
-                        allowScrubbing: true,
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.replay_5),
-                            onPressed: _seekBackward,
-                            iconSize: 36,
-                            color: Colors.deepPurple,
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              _controller.value.isPlaying
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _controller.value.isPlaying
-                                    ? _controller.pause()
-                                    : _controller.play();
-                              });
-                            },
-                            iconSize: 40,
-                            color: Colors.deepPurple,
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.forward_5),
-                            onPressed: _seekForward,
-                            iconSize: 36,
-                            color: Colors.deepPurple,
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
-                  : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(widget.imagePath, height: 200),
-                      const SizedBox(height: 20),
-                      if (hasWatchedBefore)
-                        Column(
+                              )
+                            : const CircularProgressIndicator(),
+                        const SizedBox(height: 10),
+                        VideoProgressIndicator(
+                          _controller,
+                          allowScrubbing: true,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            ElevatedButton.icon(
-                              onPressed: _playVideo,
-                              icon: Icon(Icons.play_arrow),
-                              label: Text("Watch Again"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(
-                                  255,
-                                  161,
-                                  129,
-                                  216,
-                                ),
-                              ),
+                            IconButton(
+                              icon: const Icon(Icons.replay_5),
+                              onPressed: _seekBackward,
+                              iconSize: 36,
+                              color: Colors.deepPurple,
                             ),
-                            const SizedBox(height: 10),
-                            ElevatedButton(
+                            IconButton(
+                              icon: Icon(
+                                _controller.value.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                              ),
                               onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (_) => const MorningRoutineGameScreen(),
-                                  ),
-                                );
+                                setState(() {
+                                  _controller.value.isPlaying
+                                      ? _controller.pause()
+                                      : _controller.play();
+                                });
                               },
-                              child: Text("Play Game"),
+                              iconSize: 40,
+                              color: Colors.deepPurple,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.forward_5),
+                              onPressed: _seekForward,
+                              iconSize: 36,
+                              color: Colors.deepPurple,
                             ),
                           ],
-                        )
-                      else
-                        ElevatedButton.icon(
-                          onPressed: _playVideo,
-                          icon: Icon(Icons.play_arrow),
-                          label: Text("Play Routine"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              161,
-                              129,
-                              216,
+                        ),
+                      ],
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(widget.imagePath, height: 200),
+                        const SizedBox(height: 20),
+                        if (hasWatchedBefore)
+                          Column(
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _playVideo,
+                                icon: const Icon(Icons.play_arrow),
+                                label: const Text("Watch Again"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(
+                                      255, 161, 129, 216),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          MorningRoutineGameScreen(
+                                        title: "Morning Routine Game",
+                                        skill: "Cognitive",
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text("Play Game"),
+                              ),
+                            ],
+                          )
+                        else
+                          ElevatedButton.icon(
+                            onPressed: _playVideo,
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text("Play Routine"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(
+                                  255, 161, 129, 216),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
         ),
       ),
     );
@@ -285,7 +278,7 @@ class _MorningRoutineScreenState extends State<MorningRoutineScreen> {
 class FullScreenVideo extends StatelessWidget {
   final VideoPlayerController playerController;
 
-  const FullScreenVideo({required this.playerController});
+  const FullScreenVideo({super.key, required this.playerController});
 
   @override
   Widget build(BuildContext context) {

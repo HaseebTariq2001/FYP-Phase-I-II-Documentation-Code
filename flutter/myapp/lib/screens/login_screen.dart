@@ -137,9 +137,9 @@ class _LoginScreenState extends State<LoginScreen>
 
   /// ✅ NEW Updated function to also save child_id after successful login
   Future<bool> _verifyChildLoginLocally(String name, String password) async {
-    final url = Uri.parse('http://192.168.1.6:8000/api/verify_child_login');
-    // final url = Uri.parse('http://127.0.0.1:8000/api/verify_child_login');
-    // final url = Uri.parse('http://100.64.32.53:8000/api/verify_child_login');
+    // final url = Uri.parse('http://192.168.1.6:8000/api/verify_child_login');
+     final url = Uri.parse('http://127.0.0.1:8000/api/verify_child_login');
+    // final url = Uri.parse('http://100.64.64.88:8000/api/verify_child_login');
 
     try {
       final response = await http.post(
