@@ -16,14 +16,9 @@ android {
     
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
-    dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-}
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
@@ -53,3 +48,10 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation 'com.google.firebase:firebase-messaging:23.3.1'
+}
+    
+// ✅ Add this line OUTSIDE all blocks at the very end of the file
+apply plugin: 'com.google.gms.google-services'

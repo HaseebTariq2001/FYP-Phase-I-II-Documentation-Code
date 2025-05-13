@@ -5,8 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:math';
-import 'package:myapp/services/notification_service.dart';        // ✅ NEW: add this
-import 'package:myapp/utils/preferences_helper.dart';   
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LessonScreen extends StatefulWidget {
   final List<String> phrases;
@@ -31,6 +30,53 @@ class _LessonScreenState extends State<LessonScreen> {
   final SpeechToText speechToText = SpeechToText();
   final Random _random = Random();
   final AudioPlayer audioPlayer = AudioPlayer();
+
+  // haseeb addition
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  // haseeb addition
+  @override
+  void initState() {
+    super.initState();
+    _initializeNotifications();
+  }
+
+  // haseeb addition
+  void _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // haseeb addition
+  void _sendLessonCompleteNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'lesson_channel_id', // channel ID
+          'Lesson Notifications', // channel name
+          channelDescription: 'Notifies when a lesson is completed',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      "Time to Play! 🎮",
+      "You’ve completed your lesson! Try the activity ⭐",
+      platformChannelSpecifics,
+      payload: 'lesson_complete',
+    );
+  }
 
   int currentIndex = 0;
   String childResponse = "";
@@ -73,7 +119,7 @@ class _LessonScreenState extends State<LessonScreen> {
     bool available = await speechToText.initialize(
       onStatus: (status) {
         if (status == 'notListening') {
-           _evaluateResponse();
+          _evaluateResponse();
           if (childResponse.isNotEmpty && !hasPraised) {
             setState(() {
               praiseText = "Try again";
@@ -112,60 +158,28 @@ class _LessonScreenState extends State<LessonScreen> {
     await audioPlayer.play(AssetSource('sounds/cheer-up.mp3'));
   }
 
-  // void _evaluateResponse() {
-  //   final input = _sanitizeText(childResponse);
-  //   final target = _sanitizeText(currentPhrase);
-
-  //   int inputWordCount = input.split(' ').length;
-  //   int targetWordCount = target.split(' ').length;
-
-  //   if (inputWordCount < (targetWordCount * 0.8)) {
-  //     return;
-  //   }
-
-  //   double matchPercentage = _calculateMatch(input, target);
-
-  //   if (matchPercentage >= 0.9 && !hasPraised) {
-  //     final selectedPraise =
-  //         praiseOptions[_random.nextInt(praiseOptions.length)];
-  //     setState(() {
-  //       praiseText = selectedPraise['text']!;
-  //       praiseEmoji = selectedPraise['emoji']!;
-  //       correctCount++;
-  //       hasPraised = true;
-  //     });
-  //   } else if (matchPercentage < 0.9 &&
-  //       childResponse.isNotEmpty &&
-  //       !hasPraised) {
-  //     setState(() {
-  //       praiseText = "Try again";
-  //       praiseEmoji = "👎";
-  //     });
-  //   }
-  // }
-
   void _evaluateResponse() {
-  final input = _sanitizeText(childResponse);
-  final target = _sanitizeText(currentPhrase);
+    final input = _sanitizeText(childResponse);
+    final target = _sanitizeText(currentPhrase);
 
-  double matchPercentage = _calculateMatch(input, target);
+    double matchPercentage = _calculateMatch(input, target);
 
-  if (matchPercentage >= 0.9 && !hasPraised) {
-    final selectedPraise =
-        praiseOptions[_random.nextInt(praiseOptions.length)];
-    setState(() {
-      praiseText = selectedPraise['text']!;
-      praiseEmoji = selectedPraise['emoji']!;
-      correctCount++;
-      hasPraised = true;
-    });
-  } else if (childResponse.isNotEmpty && !hasPraised) {
-    setState(() {
-      praiseText = "Try again";
-      praiseEmoji = "👎";
-    });
+    if (matchPercentage >= 0.9 && !hasPraised) {
+      final selectedPraise =
+          praiseOptions[_random.nextInt(praiseOptions.length)];
+      setState(() {
+        praiseText = selectedPraise['text']!;
+        praiseEmoji = selectedPraise['emoji']!;
+        correctCount++;
+        hasPraised = true;
+      });
+    } else if (childResponse.isNotEmpty && !hasPraised) {
+      setState(() {
+        praiseText = "Try again";
+        praiseEmoji = "👎";
+      });
+    }
   }
-}
 
   String _sanitizeText(String text) {
     return text.toLowerCase().replaceAll(RegExp(r"[^\w\s]"), "").trim();
@@ -205,51 +219,60 @@ class _LessonScreenState extends State<LessonScreen> {
       } else {
         if (skippedCount == 0) {
           _markLessonComplete();
+
+          // haseeb addition
+          // _sendLessonCompleteNotification();
+          // Modified: Added 5-second delay for notification while showing dialog immediately
+          Future.delayed(Duration(seconds: 5), () {
+            _sendLessonCompleteNotification();
+          });
           showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-              title: const Text("Lesson Completed! 🎉"),
-              content: const Text(
-                "You got all phrases correct! Activity and next Lesson Unlocked",
-              ),
-              actions: [
-                TextButton(
-                  child: const Text("OK"),
-                  onPressed: () async {
-                    await _playCheerUpSound();
-                    Navigator.pop(context);
-                    Navigator.pop(context, true);
-                  },
+            builder:
+                (context) => AlertDialog(
+                  title: const Text("Lesson Completed! 🎉"),
+                  content: const Text(
+                    "You got all phrases correct! Activity and next Lesson Unlocked",
+                  ),
+                  actions: [
+                    TextButton(
+                      child: const Text("OK"),
+                      onPressed: () async {
+                        await _playCheerUpSound();
+                        Navigator.pop(context);
+                        Navigator.pop(context, true);
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
           );
         } else {
           showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-              title: const Text("⚠ Lesson Not Completed"),
-              content: Text(
-                "You skipped $skippedCount phrase(s).\nPlease correct all phrases to unlock the next lesson.",
-              ),
-              actions: [
-                TextButton(
-                  child: const Text("Try Again"),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      currentIndex = skippedIndexes.first;
-                      skippedCount = 0;
-                      skippedIndexes.clear();
-                      praiseText = "";
-                      praiseEmoji = "";
-                      childResponse = "";
-                      hasPraised = false;
-                    });
-                  },
+            builder:
+                (context) => AlertDialog(
+                  title: const Text("⚠ Lesson Not Completed"),
+                  content: Text(
+                    "You skipped $skippedCount phrase(s).\nPlease correct all phrases to unlock the next lesson.",
+                  ),
+                  actions: [
+                    TextButton(
+                      child: const Text("Try Again"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          currentIndex = skippedIndexes.first;
+                          skippedCount = 0;
+                          skippedIndexes.clear();
+                          praiseText = "";
+                          praiseEmoji = "";
+                          childResponse = "";
+                          hasPraised = false;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
           );
         }
       }
@@ -269,41 +292,22 @@ class _LessonScreenState extends State<LessonScreen> {
     });
   }
 
-  // Future<void> _markLessonComplete() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final unlocked = prefs.getInt('unlockedLesson') ?? 0;
-
-  //   if (unlocked <= widget.lessonIndex &&
-  //       widget.lessonIndex + 1 < widget.totalLessonCount) {
-  //     await prefs.setInt('unlockedLesson', widget.lessonIndex + 1);
-  //   }
-  // }
-
-  // @override
-  // void dispose() {
-  //   flutterTts.stop();
-  //   speechToText.stop();
-  //   super.dispose();
-  // }
-
   Future<void> _markLessonComplete() async {
-  final prefs = await SharedPreferences.getInstance();
-  final unlocked = prefs.getInt('unlockedLesson') ?? 0;
+    final prefs = await SharedPreferences.getInstance();
+    final unlocked = prefs.getInt('unlockedLesson') ?? 0;
 
-  if (unlocked <= widget.lessonIndex &&
-      widget.lessonIndex + 1 < widget.totalLessonCount) {
-    await prefs.setInt('unlockedLesson', widget.lessonIndex + 1);
+    if (unlocked <= widget.lessonIndex &&
+        widget.lessonIndex + 1 < widget.totalLessonCount) {
+      await prefs.setInt('unlockedLesson', widget.lessonIndex + 1);
+    }
   }
 
-  // ✅ NEW: notification check added
-  bool notificationsOn = await PreferencesHelper.isNotificationEnabled();
-  if (notificationsOn) {
-    await NotificationService.scheduleActivityReminder(
-      lessonIndex: widget.lessonIndex,
-    );
+  @override
+  void dispose() {
+    flutterTts.stop();
+    speechToText.stop();
+    super.dispose();
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -311,10 +315,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -352,7 +353,9 @@ class _LessonScreenState extends State<LessonScreen> {
                       currentPhrase,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     ElevatedButton.icon(
@@ -361,7 +364,9 @@ class _LessonScreenState extends State<LessonScreen> {
                       label: const Text(
                         "Play Phrase",
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.indigo,
@@ -370,7 +375,9 @@ class _LessonScreenState extends State<LessonScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -380,7 +387,9 @@ class _LessonScreenState extends State<LessonScreen> {
                       label: const Text(
                         "Say It",
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -389,14 +398,19 @@ class _LessonScreenState extends State<LessonScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     if (praiseText.isNotEmpty)
                       Column(
                         children: [
-                          Text(praiseEmoji, style: const TextStyle(fontSize: 40)),
+                          Text(
+                            praiseEmoji,
+                            style: const TextStyle(fontSize: 40),
+                          ),
                           const SizedBox(height: 5),
                           Text(
                             praiseText,
@@ -427,7 +441,9 @@ class _LessonScreenState extends State<LessonScreen> {
                                 foregroundColor: Colors.white,
                                 shape: const StadiumBorder(),
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 10),
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
                               ),
                               child: const Text(
                                 "Previous Phrase",
@@ -442,7 +458,9 @@ class _LessonScreenState extends State<LessonScreen> {
                             foregroundColor: Colors.white,
                             shape: const StadiumBorder(),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
                           ),
                           child: const Text(
                             "Next Phrase",

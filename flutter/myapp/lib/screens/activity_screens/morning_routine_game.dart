@@ -75,8 +75,8 @@ class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
     final childId = prefs.getInt('child_id');
 
     await http.post(
-      // Uri.parse('http://192.168.1.6:8000/api/save-activity'),
-      Uri.parse('http://100.64.64.88:8000/api/save-activity'),
+      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'child_id': childId,

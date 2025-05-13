@@ -14,8 +14,6 @@
 // import 'package:myapp/screens/Learning and lesson/cognitive_course_detail_screen.dart';
 // import 'package:audioplayers/audioplayers.dart';
 
-
-
 // import '../progress_report_screen.dart' show ProgressReportScreen;
 
 // class LearningTabScreen extends StatelessWidget {
@@ -405,8 +403,6 @@
 //   }
 // }
 
-
-
 // lib/screens/child_dashboard_screen.dart
 
 import 'dart:convert';
@@ -452,7 +448,8 @@ class _LearningTabScreenState extends State<LearningTabScreen> {
     }
 
     final response = await http.get(
-      Uri.parse('http://100.64.64.88:8000/child/$childName'),
+      // Uri.parse('http://100.64.64.88:8000/child/$childName'),
+      Uri.parse('http://192.168.1.6:8000/child/$childName'),
     );
 
     if (response.statusCode == 200) {
@@ -469,14 +466,18 @@ class _LearningTabScreenState extends State<LearningTabScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
+            builder:
+                (context) => IconButton(
+                  icon: Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
           ),
-          title: Text("Child Dashboard", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: Text(
+            "Child Dashboard",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           backgroundColor: Colors.blue,
           centerTitle: true,
           bottom: TabBar(
@@ -489,10 +490,7 @@ class _LearningTabScreenState extends State<LearningTabScreen> {
         ),
         drawer: _DrawerWidget(fetchChildData: fetchChildData),
         body: TabBarView(
-          children: [
-            _buildLearningTab(context),
-            _buildGamesTab(context),
-          ],
+          children: [_buildLearningTab(context), _buildGamesTab(context)],
         ),
       ),
     );
@@ -503,9 +501,39 @@ class _LearningTabScreenState extends State<LearningTabScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          _buildCard(context, 'assets/images/repeat_after_me.jpg', "Communication Skills", "Part 1 • Level 1 - Level 5", "Start Learning", () => Navigator.push(context, MaterialPageRoute(builder: (_) => CourseDetailScreen()))),
-          _buildCard(context, 'assets/images/Behavioral skill.jpeg', "Behavioral Skills", "Part 2 • Level 1 - Level 3", "Start Learning", () => Navigator.push(context, MaterialPageRoute(builder: (_) => BehavioralSkillsScreen()))),
-          _buildCard(context, 'assets/images/cognitive_skills.png', "Cognitive Skills", "Part 3 • Level 1 - Level 2", "Start Learning", () => Navigator.push(context, MaterialPageRoute(builder: (_) => CognitiveCourseDetailScreen()))),
+          _buildCard(
+            context,
+            'assets/images/repeat_after_me.jpg',
+            "Communication Skills",
+            "Part 1 • Level 1 - Level 5",
+            "Start Learning",
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => CourseDetailScreen()),
+            ),
+          ),
+          _buildCard(
+            context,
+            'assets/images/Behavioral skill.jpeg',
+            "Behavioral Skills",
+            "Part 2 • Level 1 - Level 3",
+            "Start Learning",
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => BehavioralSkillsScreen()),
+            ),
+          ),
+          _buildCard(
+            context,
+            'assets/images/cognitive_skills.png',
+            "Cognitive Skills",
+            "Part 3 • Level 1 - Level 2",
+            "Start Learning",
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => CognitiveCourseDetailScreen()),
+            ),
+          ),
         ],
       ),
     );
@@ -516,64 +544,91 @@ class _LearningTabScreenState extends State<LearningTabScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          _buildCard(context,
-           'assets/images/repeat_after_me.jpg',
+          _buildCard(
+            context,
+            'assets/images/repeat_after_me.jpg',
             "Communication Skills (Games and Activities)",
             "Level 1 - Level 5",
-            "Play Games", () => Navigator.push(context, MaterialPageRoute(builder: (_) => ActivityDetailScreen()
-            )
-           )
+            "Play Games",
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ActivityDetailScreen()),
+            ),
           ),
-          _buildCard(context,
-           'assets/images/understanding-emotion.jpeg',
+          _buildCard(
+            context,
+            'assets/images/understanding-emotion.jpeg',
             "Behavioral Skills (Games and Activities)",
-             "Level 1 - Level 3",
-              "Play Games", () => Navigator.push(context, MaterialPageRoute(builder: (_) => BehavioralSkillsActivityScreen()
-              )
-            )
+            "Level 1 - Level 3",
+            "Play Games",
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BehavioralSkillsActivityScreen(),
+              ),
+            ),
           ),
-          _buildCard(context,
-           'assets/images/cognitive_skills.png',
+          _buildCard(
+            context,
+            'assets/images/cognitive_skills.png',
             "Cognitive Skills (Games and Activities)",
-             "Level 1 - Level 2",
-              "Play Games", () => Navigator.push(context, MaterialPageRoute(builder: (_) => CognitiveActivityDetailScreen()
-              )
-            )
+            "Level 1 - Level 2",
+            "Play Games",
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CognitiveActivityDetailScreen(),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCard(BuildContext context,
-   String imagePath,
+  Widget _buildCard(
+    BuildContext context,
+    String imagePath,
     String title,
-     String subtitle,
-      String buttonText,
-       VoidCallback onPressed) 
-      {
+    String subtitle,
+    String buttonText,
+    VoidCallback onPressed,
+  ) {
     return Container(
       margin: EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.asset(imagePath, height: 220, width: double.infinity, fit: BoxFit.cover),
+            child: Image.asset(
+              imagePath,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                ),
               ],
             ),
           ),
@@ -620,14 +675,23 @@ class _DrawerWidget extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator(color: Colors.white);
                 } else if (snapshot.hasError) {
-                  return Text('Error loading profile', style: TextStyle(color: Colors.white));
+                  return Text(
+                    'Error loading profile',
+                    style: TextStyle(color: Colors.white),
+                  );
                 } else if (!snapshot.hasData) {
-                  return Text('No profile found', style: TextStyle(color: Colors.white));
+                  return Text(
+                    'No profile found',
+                    style: TextStyle(color: Colors.white),
+                  );
                 }
 
                 final childData = snapshot.data!;
                 final imageBlob = childData['image_blob'];
-                final imageBytes = (imageBlob != null && imageBlob.isNotEmpty) ? base64Decode(imageBlob) : null;
+                final imageBytes =
+                    (imageBlob != null && imageBlob.isNotEmpty)
+                        ? base64Decode(imageBlob)
+                        : null;
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -635,12 +699,31 @@ class _DrawerWidget extends StatelessWidget {
                     CircleAvatar(
                       radius: 40,
                       backgroundColor: Colors.white,
-                      child: imageBytes != null
-                          ? ClipOval(child: Image.memory(imageBytes, fit: BoxFit.cover, width: 80, height: 80))
-                          : Icon(Icons.person, size: 40, color: Colors.grey),
+                      child:
+                          imageBytes != null
+                              ? ClipOval(
+                                child: Image.memory(
+                                  imageBytes,
+                                  fit: BoxFit.cover,
+                                  width: 80,
+                                  height: 80,
+                                ),
+                              )
+                              : Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
                     ),
                     SizedBox(height: 10),
-                    Text(childData['name'] ?? "Child Name", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(
+                      childData['name'] ?? "Child Name",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 );
               },
@@ -649,16 +732,29 @@ class _DrawerWidget extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.stacked_bar_chart_sharp),
             title: Text('Progress report'),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProgressReportScreen())),
+            onTap:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProgressReportScreen(),
+                  ),
+                ),
           ),
           ListTile(
             leading: Icon(Icons.switch_account),
             title: Text('Switch Dashboard'),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen())),
+            onTap:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                ),
           ),
           ListTile(
             leading: Icon(Icons.logout),
-            title: Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            title: Text(
+              'Logout',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               await GoogleSignIn().signOut();

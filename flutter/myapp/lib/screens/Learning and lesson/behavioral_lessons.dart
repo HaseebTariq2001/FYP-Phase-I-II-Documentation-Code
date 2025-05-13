@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Added for notifications
 
 class BehaviorLessonScreen extends StatefulWidget {
   final VoidCallback? onComplete;
@@ -11,6 +12,9 @@ class BehaviorLessonScreen extends StatefulWidget {
 
 class _LessonScreenState extends State<BehaviorLessonScreen> {
   final FlutterTts flutterTts = FlutterTts();
+  // Added: Instance for local notifications
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   int currentIndex = 0;
   double speechRate = 0.5;
   late List<Map<String, String>> screens;
@@ -26,92 +30,102 @@ A happy emotion is a good feeling we get when something nice happens.
 We feel happy when we smile, laugh, or enjoy something fun.
 
 How Does Happy Feel in Our Body?
-- We smile 😊
-- Our eyes shine ✨
-- We might laugh or giggle 😄
-- Our body feels light and calm
+
+* We smile 😊
+* Our eyes shine ✨
+* We might laugh or giggle 😄
+* Our body feels light and calm
 
 How Can We Make Others Happy?
-- Sharing toys
-- Giving hugs
-- Saying kind words
-- Helping a friend''',
+
+* Sharing toys
+* Giving hugs
+* Saying kind words
+* Helping a friend''',
       },
       {
         'title': 'Sad Emotion',
         'image': 'assets/images/Sad Emotion.jpeg',
         'text': '''
-Sadness is when you feel down or upset or we miss something we like. It's okay to cry or be quiet when you're sad.
+  Sadness is when you feel down or upset or we miss something we like. It's okay to cry or be quiet when you're sad.
 
 What Makes Us Sad?
-- Losing a toy
-- Getting hurt
-- Someone says mean words
-- Missing a friend or family
+
+* Losing a toy
+* Getting hurt
+* Someone says mean words
+* Missing a friend or family
 
 What Can Help?
-- Talking to someone
-- Getting a hug
-- Taking deep breaths
-- Doing something fun
-''',
+
+* Talking to someone
+* Getting a hug
+* Taking deep breaths
+* Doing something fun
+  ''',
       },
       {
         'title': 'Anger Emotion',
         'image': 'assets/images/Angry Emotion.jpeg',
         'text': '''
-Anger is a strong feeling when something bothers us or feels unfair.
+  Anger is a strong feeling when something bothers us or feels unfair.
 
 What Makes Us Angry?
-- Someone takes our toy
-- We can’t do what we want
-- Someone says “no”
-- Loud noises or too much waiting
+
+* Someone takes our toy
+* We can’t do what we want
+* Someone says “no”
+* Loud noises or too much waiting
 
 What Can Help?
-- Taking deep breaths
-- Counting slowly to 5
-- Asking for help
-- Taking a break or quiet time
-''',
+
+* Taking deep breaths
+* Counting slowly to 5
+* Asking for help
+* Taking a break or quiet time
+  ''',
       },
       {
         'title': 'Scared Emotion',
         'image': 'assets/images/Scared Emotion.jpeg',
         'text': '''
-Being scared means we feel unsafe or worried.
+  Being scared means we feel unsafe or worried.
 
 What Makes Us Scared?
-- Loud thunder
-- Dark rooms
-- Being alone
-- New or unknown places
+
+* Loud thunder
+* Dark rooms
+* Being alone
+* New or unknown places
 
 What Can Help?
-- Holding someone’s hand
-- Turning on a light
-- Talking to an adult
-- Deep breathing or a hug
-''',
+
+* Holding someone’s hand
+* Turning on a light
+* Talking to an adult
+* Deep breathing or a hug
+  ''',
       },
       {
         'title': 'Curious Emotion',
         'image': 'assets/images/Curious Emotion.jpeg',
         'text': '''
-Curiosity is the feeling we get when we want to know or learn something new.
+  Curiosity is the feeling we get when we want to know or learn something new.
 
 When Do We Feel Curious?
-- Seeing something new
-- Asking questions like “Why?” or “How?”
-- Exploring toys or books
-- Watching animals or machines
+
+* Seeing something new
+* Asking questions like “Why?” or “How?”
+* Exploring toys or books
+* Watching animals or machines
 
 What Can We Do?
-- Ask safe questions
-- Try new things with help
-- Look, listen, and learn
-- Use books, pictures, or videos
-''',
+
+* Ask safe questions
+* Try new things with help
+* Look, listen, and learn
+* Use books, pictures, or videos
+  ''',
       },
     ],
     'Recognizing Behavior': [
@@ -119,27 +133,29 @@ What Can We Do?
         'title': 'What is Behavior?',
         'image': 'assets/images/Recognizing-Behavior.jpeg',
         'text': '''
-Behavior is how we act. It’s what we do with our body, face, and voice.
+  Behavior is how we act. It’s what we do with our body, face, and voice.
 
 Examples:
-- Smiling when happy 😊
-- Jumping when excited 🦘
-- Crying when sad 😢
-- Shouting when angry 😠
-''',
+
+* Smiling when happy 😊
+* Jumping when excited 🦘
+* Crying when sad 😢
+* Shouting when angry 😠
+  ''',
       },
       {
         'title': 'Good Behavior',
         'image': 'assets/images/kids-celebrating.jpeg',
         'text': '''
-Good behavior helps us make friends and feel happy.
+  Good behavior helps us make friends and feel happy.
 
 Examples:
-- Sharing toys 🤝
-- Saying “please” and “thank you” 🙏
-- Listening to adults 👂
-- Helping others 🤗
-''',
+
+* Sharing toys 🤝
+* Saying “please” and “thank you” 🙏
+* Listening to adults 👂
+* Helping others 🤗
+  ''',
       },
       {
         'title': 'Good Behavior',
@@ -163,13 +179,14 @@ Examples:
         'title': 'Not-Okay Behavior',
         'image': 'assets/images/Angry Emotion.jpeg',
         'text': '''
-Sometimes we show behavior that’s not okay.
+  Sometimes we show behavior that’s not okay.
 
 Examples:
-- Hitting or biting 😠
-- Screaming loudly 😤
-- Throwing things 😡
-- Not listening 🙉
+
+* Hitting or biting 😠
+* Screaming loudly 😤
+* Throwing things 😡
+* Not listening 🙉
 
 We can learn better ways!
 ''',
@@ -233,7 +250,7 @@ Examples of Social Cues:
 -Smiling means someone is happy 😊
 -A loud voice might mean someone is excited or upset 😠
 -Looking away might mean someone is shy or not paying attention 😳
- ''',
+''',
       },
       {
         'title': 'Facial Expressions',
@@ -248,43 +265,43 @@ What to Look For:
 -Big smile = happy 😄
 
 Why It Matters:
--It helps us understand others and react kindly. 
-        ''',
+-It helps us understand others and react kindly.
+''',
       },
       {
         'title': 'Body Language',
         'image': 'assets/images/body-language.jpeg',
-        'text': ''' 
+        'text': '''
 Our body talks too! This is called body language.
 
 Examples:
 
--Waving means hello 
+-Waving means hello
 -Arms crossed might mean someone is upset
 -Standing close means someone wants to be friendly
 -Turning away can mean they want space
-        ''',
+''',
       },
       {
         'title': 'Body Language',
         'image': 'assets/images/Child-Waving.png',
         'text': '''
-When someone waves their hand, it's often their way of saying "hello." It's a friendly way to greet someone and let them know you see them. You can wave back to say hello too! 
-        ''',
+When someone waves their hand, it's often their way of saying "hello." It's a friendly way to greet someone and let them know you see them. You can wave back to say hello too!
+''',
       },
       {
         'title': 'Body Language',
         'image': 'assets/images/upset-kid.jpeg',
         'text': '''
-When someone has their arms crossed in front of their body, it can sometimes mean they are feeling upset, closed off, or uncomfortable. It's like they are building a little wall. If you see someone with their arms crossed, they might need some space or a kind question to see if they are okay. 
-        ''',
+When someone has their arms crossed in front of their body, it can sometimes mean they are feeling upset, closed off, or uncomfortable. It's like they are building a little wall. If you see someone with their arms crossed, they might need some space or a kind question to see if they are okay.
+''',
       },
       {
         'title': 'Body Language',
         'image': 'assets/images/walk-away.jpeg',
         'text': '''
-When someone turns their body or head away from you, it can be a sign that they want some space or time alone. They might be feeling overwhelmed, tired, or just need a break. It's important to respect their need for space and give them some time. 
-        ''',
+When someone turns their body or head away from you, it can be a sign that they want some space or time alone. They might be feeling overwhelmed, tired, or just need a break. It's important to respect their need for space and give them some time.
+''',
       },
       {
         'title': 'Eye Contact',
@@ -302,9 +319,7 @@ Practice Tips:
 
 -Try looking at their nose if eyes feel too strong
 -Look away if it feels too much—it’s okay to practice slowly
-
-
-        ''',
+''',
       },
       {
         'title': 'How to Respond',
@@ -322,6 +337,45 @@ Helpful Reactions:
       },
     ],
   };
+
+  @override
+  void initState() {
+    super.initState();
+    // Added: Initialize notifications when the screen is created
+    _initializeNotifications();
+  }
+
+  // Added: Initialize the notification plugin for Android
+  void _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Added: Send a notification when the lesson is completed
+  void _sendLessonCompleteNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'lesson_channel_id', // Channel ID
+          'Lesson Notifications', // Channel name
+          channelDescription: 'Notifies when a lesson is completed',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Time to Play! 🎮',
+      'You’ve completed your lesson! Try the activity ⭐',
+      platformChannelSpecifics,
+      payload: 'lesson_complete',
+    );
+  }
 
   @override
   void didChangeDependencies() {
@@ -356,6 +410,11 @@ Helpful Reactions:
   }
 
   void _showCompletionDialog() {
+    // Added: Trigger notification before showing dialog
+    // Modified: Added 5-second delay for notification while showing dialog immediately
+    Future.delayed(Duration(seconds: 5), () {
+      _sendLessonCompleteNotification();
+    });
     showDialog(
       context: context,
       builder:
@@ -425,11 +484,6 @@ Helpful Reactions:
                         child: Image.asset(
                           screen['image']!,
                           fit: BoxFit.contain,
-                          // fit:
-                          //     MediaQuery.of(context).orientation ==
-                          //             Orientation.portrait
-                          //         ? BoxFit.fitHeight
-                          //         : BoxFit.fitWidth,
                         ),
                       ),
                     ),

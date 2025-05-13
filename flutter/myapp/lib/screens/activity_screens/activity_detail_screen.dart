@@ -121,7 +121,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                 title: lessons[index]['title'],
                 skill: lessons[index]['skill'],
                 phrases: List<String>.from(lessons[index]['phrases']),
-                lessonIndex: index,                       // ✅ NEW: pass lessonIndex
+                                     // ✅ NEW: pass lessonIndex
               ),
         ),
       ).then((_) async {

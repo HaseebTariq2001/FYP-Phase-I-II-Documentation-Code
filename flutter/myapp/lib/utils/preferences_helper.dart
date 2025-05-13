@@ -10,8 +10,12 @@ class PreferencesHelper {
   }
 
   // ✅ Set notifications on/off
-  static Future<void> setNotificationEnabled(bool value) async {
+  // static Future<void> setNotificationEnabled(bool value) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setBool(_notificationsKey, value);
+  // }
+  static Future<void> setNotificationEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_notificationsKey, value);
+    await prefs.setBool('notifications_enabled', enabled);
   }
 }

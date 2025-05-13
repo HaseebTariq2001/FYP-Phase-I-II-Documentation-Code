@@ -27,9 +27,9 @@ class _ProgressReportScreenState extends State<ProgressReportScreen> {
     final childId = prefs.getInt('child_id');
 
     final response = await http.get(
-      // Uri.parse('http://192.168.1.6:8000/api/progress/$childId'),
+      Uri.parse('http://192.168.1.6:8000/api/progress/$childId'),
       // Uri.parse('http://100.64.32.53:8000/api/progress/$childId'),
-      Uri.parse('http://127.0.0.1:8000/api/progress/$childId'),
+      // Uri.parse('http://127.0.0.1:8000/api/progress/$childId'),
     );
 
     if (response.statusCode == 200) {

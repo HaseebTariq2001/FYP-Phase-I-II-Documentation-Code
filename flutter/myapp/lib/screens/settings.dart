@@ -458,8 +458,6 @@
 // //   }
 // // }
 
-
-
 // // import 'package:flutter/material.dart';
 
 // // import 'add_child_profile_screen.dart';
@@ -712,9 +710,6 @@
 
 // // // Placeholder for HomeScreen (assuming it exists in your project)
 
-
-
-
 // import 'package:flutter/material.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
@@ -908,7 +903,6 @@
 //   }
 // }
 
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/background_music_service.dart';
@@ -934,6 +928,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _loadNotificationPreference();
     _loadMusicPreference();
+    _loadVolumePreference(); // 👈 Add this line
+  }
+
+  Future<void> _loadVolumePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _volume = prefs.getDouble('volume') ?? 50.0;
+    });
+  }
+
+  Future<void> _saveVolumePreference(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('volume', value);
   }
 
   Future<void> _loadNotificationPreference() async {
@@ -988,21 +995,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            const Text('Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Profile',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             _buildTile(
               icon: Icons.edit,
               title: 'Edit Profile',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ParentProfileScreen())),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ParentProfileScreen(),
+                    ),
+                  ),
             ),
             const SizedBox(height: 8),
             _buildTile(
               icon: Icons.person_add,
               title: 'Add new Child',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddChildProfileScreen())),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddChildProfileScreen(),
+                    ),
+                  ),
             ),
             const SizedBox(height: 16),
-            const Text('General', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'General',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             _buildVolumeTile(),
             const SizedBox(height: 8),
@@ -1013,7 +1038,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) async {
                 setState(() => _isMusicOn = value);
                 final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('background_music_on', _isMusicOn);      // ✅ fixed key
+                await prefs.setBool(
+                  'background_music_on',
+                  _isMusicOn,
+                ); // ✅ fixed key
 
                 if (_isMusicOn) {
                   await BackgroundMusicService().playBackgroundMusic();
@@ -1034,7 +1062,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.support_agent,
               title: 'Support',
               trailingIcon: Icons.chevron_right,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen())),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackScreen(),
+                    ),
+                  ),
             ),
             const SizedBox(height: 8),
             _buildTile(
@@ -1049,7 +1083,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTile({required IconData icon, required String title, VoidCallback? onTap, IconData? trailingIcon}) {
+  Widget _buildTile({
+    required IconData icon,
+    required String title,
+    VoidCallback? onTap,
+    IconData? trailingIcon,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[300],
@@ -1060,12 +1099,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(title),
         trailing: trailingIcon != null ? Icon(trailingIcon) : null,
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 8.0,
+          horizontal: 16.0,
+        ),
       ),
     );
   }
 
-  Widget _buildSwitchTile({required IconData icon, required String title, required bool value, required ValueChanged<bool> onChanged}) {
+  Widget _buildSwitchTile({
+    required IconData icon,
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[300],
@@ -1084,7 +1131,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 8.0,
+          horizontal: 16.0,
+        ),
       ),
     );
   }
@@ -1114,12 +1164,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _volume = value;
                   });
                   await BackgroundMusicService().setVolume(_volume / 100);
+                  await _saveVolumePreference(
+                    _volume,
+                  ); // 👈 Save the updated volume
                 },
               ),
             ),
           ],
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 8.0,
+          horizontal: 16.0,
+        ),
       ),
     );
   }
