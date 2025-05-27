@@ -988,7 +988,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF7BDAEB),
+        backgroundColor: Colors.blue,
       ),
       body: Container(
         color: const Color(0xFFE0F7FA),

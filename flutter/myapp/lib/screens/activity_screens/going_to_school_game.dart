@@ -310,7 +310,6 @@
 // //   }
 // // }
 
-
 // import 'package:flutter/material.dart';
 // import 'package:intl/intl.dart';
 // // import 'progress_report_going_to_school.dart';  // Import Progress Report Screen
@@ -613,14 +612,19 @@ class GoingToSchoolRoutineGameScreen extends StatefulWidget {
   final String title;
   final String skill;
 
-  const GoingToSchoolRoutineGameScreen({Key? key, required this.title, required this.skill}) : super(key: key);
+  const GoingToSchoolRoutineGameScreen({
+    Key? key,
+    required this.title,
+    required this.skill,
+  }) : super(key: key);
 
   @override
-  _GoingToSchoolRoutineGameScreenState createState() => _GoingToSchoolRoutineGameScreenState();
+  _GoingToSchoolRoutineGameScreenState createState() =>
+      _GoingToSchoolRoutineGameScreenState();
 }
 
-
-class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGameScreen> {
+class _GoingToSchoolRoutineGameScreenState
+    extends State<GoingToSchoolRoutineGameScreen> {
   final List<String> images = [
     'assets/images/wave_goodbye.png',
     'assets/images/walk_to_the_bus_stop.png',
@@ -663,16 +667,17 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
   void _showResultDialog(String title, String content) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(title),
+            content: Text(content),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -681,9 +686,9 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
     final childId = prefs.getInt('child_id');
 
     await http.post(
-      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
-      // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
+      Uri.parse('http://192.168.1.10:8000/api/save-activity'),
 
+      // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'child_id': childId,
@@ -698,7 +703,9 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
   void _handleSubmit() async {
     if (userArrangement.contains(null)) {
       _showResultDialog(
-          'Incomplete', 'Please complete all steps before submitting.');
+        'Incomplete',
+        'Please complete all steps before submitting.',
+      );
       return;
     }
 
@@ -716,10 +723,14 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
 
     if (correctCount == 6) {
       _showResultDialog(
-          'Congratulations!', 'Well done! You completed the sequence correctly!');
+        'Congratulations!',
+        'Well done! You completed the sequence correctly!',
+      );
     } else {
       _showResultDialog(
-          'Good Try!', 'You got $correctCount out of 6 steps right. Keep trying!');
+        'Good Try!',
+        'You got $correctCount out of 6 steps right. Keep trying!',
+      );
     }
 
     // ✅ Save to backend
@@ -752,34 +763,35 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
                 crossAxisCount: 3,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                children: shuffledImages.map((imgPath) {
-                  return Draggable<String>(
-                    data: imgPath,
-                    childWhenDragging: Container(),
-                    feedback: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.purple),
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: AssetImage(imgPath),
-                          fit: BoxFit.cover,
+                children:
+                    shuffledImages.map((imgPath) {
+                      return Draggable<String>(
+                        data: imgPath,
+                        childWhenDragging: Container(),
+                        feedback: Container(
+                          height: 100,
+                          width: 100,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.purple),
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: AssetImage(imgPath),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.purple),
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: AssetImage(imgPath),
-                          fit: BoxFit.cover,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.purple),
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: AssetImage(imgPath),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 20),
 
@@ -807,35 +819,36 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.grey.shade200,
                           ),
-                          child: userArrangement[index] != null
-                              ? Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Image.asset(userArrangement[index]!),
-                                    Positioned(
-                                      top: 8,
-                                      left: 8,
-                                      child: Text(
-                                        '${index + 1}',
-                                        style: TextStyle(
-                                          fontSize: 30,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
+                          child:
+                              userArrangement[index] != null
+                                  ? Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Image.asset(userArrangement[index]!),
+                                      Positioned(
+                                        top: 8,
+                                        left: 8,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            fontSize: 30,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              : Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.purple,
-                                      fontWeight: FontWeight.bold,
+                                    ],
+                                  )
+                                  : Center(
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        fontSize: 30,
+                                        color: Colors.purple,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
                         ),
                       );
                     },
@@ -846,8 +859,9 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
                           shuffledImages.add(userArrangement[index]!);
                         }
 
-                        int existingIndex =
-                            userArrangement.indexWhere((e) => e == image);
+                        int existingIndex = userArrangement.indexWhere(
+                          (e) => e == image,
+                        );
                         if (existingIndex != -1) {
                           userArrangement[existingIndex] = null;
                         }
@@ -878,8 +892,12 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
                       onPressed: _restartGame,
                       child: const Text('Play Again'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 161, 129, 216),
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          161,
+                          129,
+                          216,
+                        ),
                       ),
                     ),
                   ],
@@ -891,4 +909,3 @@ class _GoingToSchoolRoutineGameScreenState extends State<GoingToSchoolRoutineGam
     );
   }
 }
-

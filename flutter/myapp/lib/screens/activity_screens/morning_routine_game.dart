@@ -7,12 +7,16 @@ class MorningRoutineGameScreen extends StatefulWidget {
   final String title;
   final String skill;
 
-  const MorningRoutineGameScreen({Key? key, required this.title, required this.skill}) : super(key: key);
+  const MorningRoutineGameScreen({
+    Key? key,
+    required this.title,
+    required this.skill,
+  }) : super(key: key);
 
   @override
-  _MorningRoutineGameScreenState createState() => _MorningRoutineGameScreenState();
+  _MorningRoutineGameScreenState createState() =>
+      _MorningRoutineGameScreenState();
 }
-
 
 class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
   final List<String> images = [
@@ -57,16 +61,17 @@ class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
   void _showResultDialog(String title, String content) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(title),
+            content: Text(content),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -75,7 +80,7 @@ class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
     final childId = prefs.getInt('child_id');
 
     await http.post(
-      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      Uri.parse('http://192.168.1.10:8000/api/save-activity'),
       // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
@@ -151,34 +156,35 @@ class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
                 crossAxisCount: 3,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                children: shuffledImages.map((imgPath) {
-                  return Draggable<String>(
-                    data: imgPath,
-                    childWhenDragging: Container(),
-                    feedback: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.purple),
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: AssetImage(imgPath),
-                          fit: BoxFit.cover,
+                children:
+                    shuffledImages.map((imgPath) {
+                      return Draggable<String>(
+                        data: imgPath,
+                        childWhenDragging: Container(),
+                        feedback: Container(
+                          height: 100,
+                          width: 100,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.purple),
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: AssetImage(imgPath),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.purple),
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: AssetImage(imgPath),
-                          fit: BoxFit.cover,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.purple),
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: AssetImage(imgPath),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 20),
 
@@ -206,35 +212,36 @@ class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.grey.shade200,
                           ),
-                          child: userArrangement[index] != null
-                              ? Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Image.asset(userArrangement[index]!),
-                                    Positioned(
-                                      top: 8,
-                                      left: 8,
-                                      child: Text(
-                                        '${index + 1}',
-                                        style: TextStyle(
-                                          fontSize: 30,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
+                          child:
+                              userArrangement[index] != null
+                                  ? Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Image.asset(userArrangement[index]!),
+                                      Positioned(
+                                        top: 8,
+                                        left: 8,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            fontSize: 30,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              : Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.purple,
-                                      fontWeight: FontWeight.bold,
+                                    ],
+                                  )
+                                  : Center(
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        fontSize: 30,
+                                        color: Colors.purple,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
                         ),
                       );
                     },

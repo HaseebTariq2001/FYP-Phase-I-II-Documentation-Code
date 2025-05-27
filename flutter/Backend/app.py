@@ -1,6 +1,3 @@
-
-###############################################################################################################################
-
 import datetime
 import threading
 from flask import Flask, request, jsonify
@@ -19,8 +16,7 @@ from config import Config
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash  # if you're using hashed passwords
 import base64
-# from google.oauth2 import service_account
-# from google.auth.transport.requests import Request
+
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)
@@ -82,7 +78,7 @@ with app.app_context():
 
 
 
-# Define CARS categories
+# # Define CARS categories
 CARS_CATEGORIES = [
     "Relationship with others", "Imitation skills", "Emotional responses", "Body usage",
     "Object usage", "Adaptation to change", "Visual response", "Auditory response",
@@ -432,57 +428,6 @@ def submit_feedback():
     except Exception as e:
         traceback.print_exc()
         return jsonify({'status': 'error', 'message': 'Database error'}), 500
-
-
-# function for notification:
-# Path to your service account key JSON file
-# SERVICE_ACCOUNT_FILE = 'educare-ae115-541ccbff4d16.json'
-# SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
-
-# # Get access token
-# def get_access_token():
-#     credentials = service_account.Credentials.from_service_account_file(
-#         SERVICE_ACCOUNT_FILE, scopes=SCOPES
-#     )
-#     credentials.refresh(Request())
-#     return credentials.token
-
-# # Send notification via FCM API v1
-# def send_push_notification(fcm_token, title, body):
-#     access_token = get_access_token()
-
-#     # Replace with your Firebase project ID
-#     project_id = 'educare-ae115'
-#     url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
-
-#     headers = {
-#         'Authorization': f'Bearer {access_token}',
-#         'Content-Type': 'application/json; UTF-8',
-#     }
-
-#     message_payload = {
-#         "message": {
-#             "token": fcm_token,
-#             "notification": {
-#                 "title": title,
-#                 "body": body
-#             },
-#             "android": {
-#                 "priority": "HIGH"
-#             },
-#             "apns": {
-#                 "headers": {
-#                     "apns-priority": "10"
-#                 }
-#             }
-#         }
-#     }
-
-#     response = requests.post(url, headers=headers, data=json.dumps(message_payload))
-#     print("✅ Notification Response:", response.status_code)
-#     print("📦 Response Body:", response.json())
-
-
 
 
 if __name__ == "__main__":

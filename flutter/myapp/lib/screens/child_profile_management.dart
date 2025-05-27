@@ -48,7 +48,7 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
   Future<void> fetchChildData() async {
     // Modified: Fetch specific child data using the childName parameter
     final response = await http.get(
-      Uri.parse('http://192.168.1.6:8000/child/${widget.childName}'),
+      Uri.parse('http://192.168.1.10:8000/child/${widget.childName}'),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -74,7 +74,7 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
 
     // Modified: Update specific child using the childName
     final response = await http.put(
-      Uri.parse('http://192.168.1.6:8000/child/${widget.childName}'),
+      Uri.parse('http://192.168.1.10:8000/child/${widget.childName}'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': _nameController.text,
@@ -98,7 +98,10 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Child Profile"),
+        title: Text(
+          "Child Profile",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -108,6 +111,9 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
             );
           },
         ),
+        backgroundColor: Colors.blue,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white), // added for icon
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

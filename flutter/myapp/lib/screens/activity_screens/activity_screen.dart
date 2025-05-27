@@ -8,19 +8,16 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class ActivityScreen extends StatefulWidget {
   final String title;
   final String skill;
   final List<String> phrases;
-
 
   const ActivityScreen({
     super.key,
     required this.title,
     required this.skill,
     required this.phrases,
-   
   });
 
   @override
@@ -38,11 +35,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   String get currentPhrase => widget.phrases[currentIndex];
 
-
   @override
   void initState() {
     super.initState();
-
   }
 
   Future<void> _startListening() async {
@@ -151,13 +146,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
             .where((r) => r['status'] != null && r['status'] == 'Correct')
             .length;
 
-   
     final total = widget.phrases.length;
 
     await http.post(
       // Uri.parse('http://127.0.0.1:8000/api/save-activity'),
       // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
-      Uri.parse('http://192.168.1.6:8000/api/save-activity'),
+      Uri.parse('http://192.168.137.211:8000/api/save-activity'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'child_id': childId,

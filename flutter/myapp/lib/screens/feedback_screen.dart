@@ -29,7 +29,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     });
 
     // API endpoint (replace this with your actual backend URL)
-    var url = Uri.parse('http://192.168.1.6:8000/submit_feedback');
+    var url = Uri.parse('http://192.168.1.10:8000/submit_feedback');
 
     try {
       // Send POST request to the backend with message
@@ -72,14 +72,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feedback', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Feedback',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
-        backgroundColor: Color.fromARGB(
-          255,
-          161,
-          129,
-          216,
-        ), // Set the AppBar background to purple
+        // backgroundColor: Color.fromARGB(
+        //   255,
+        //   161,
+        //   129,
+        //   216,
+        // ), // Set the AppBar background to purple
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white), // added for icon
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

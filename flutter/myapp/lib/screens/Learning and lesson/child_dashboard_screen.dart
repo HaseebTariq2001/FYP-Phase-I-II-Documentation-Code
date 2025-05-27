@@ -26,7 +26,7 @@
 //     }
 
 //     final response = await http.get(
-//       // Uri.parse('http://192.168.1.6:8000/child/$childName'),
+//       // Uri.parse('http://192.168.1.10:8000/child/$childName'),
 //       Uri.parse('http://100.64.64.88:8000/child/$childName'),
 //     );
 
@@ -449,7 +449,7 @@ class _LearningTabScreenState extends State<LearningTabScreen> {
 
     final response = await http.get(
       // Uri.parse('http://100.64.64.88:8000/child/$childName'),
-      Uri.parse('http://192.168.1.6:8000/child/$childName'),
+      Uri.parse('http://192.168.1.10:8000/child/$childName'),
     );
 
     if (response.statusCode == 200) {

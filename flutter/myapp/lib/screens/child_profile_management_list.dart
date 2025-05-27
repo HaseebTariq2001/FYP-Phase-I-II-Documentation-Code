@@ -26,7 +26,7 @@ class _SelectChildScreenState extends State<SelectChildScreen> {
   Future<void> fetchChildren() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.6:8000/child_list'),
+        Uri.parse('http://192.168.1.10:8000/child_list'),
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -54,7 +54,7 @@ class _SelectChildScreenState extends State<SelectChildScreen> {
   Future<void> deleteChild(String name) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://192.168.1.6:8000/child/$name'),
+        Uri.parse('http://192.168.1.10:8000/child/$name'),
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -88,8 +88,13 @@ class _SelectChildScreenState extends State<SelectChildScreen> {
             );
           },
         ),
-        title: Text('Select a Child'),
+        title: Text(
+          'Select a Child',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blue,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white), // added for icon
       ),
       body: Container(
         color: Colors.lightBlue[100], // Solid background

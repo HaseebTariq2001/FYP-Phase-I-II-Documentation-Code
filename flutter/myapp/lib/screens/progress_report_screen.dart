@@ -27,7 +27,7 @@ class _ProgressReportScreenState extends State<ProgressReportScreen> {
     final childId = prefs.getInt('child_id');
 
     final response = await http.get(
-      Uri.parse('http://192.168.1.6:8000/api/progress/$childId'),
+      Uri.parse('http://192.168.1.10:8000/api/progress/$childId'),
       // Uri.parse('http://100.64.32.53:8000/api/progress/$childId'),
       // Uri.parse('http://127.0.0.1:8000/api/progress/$childId'),
     );
@@ -254,7 +254,7 @@ class _ProgressReportScreenState extends State<ProgressReportScreen> {
           ),
         ),
         centerTitle: true, // Center the title
-        backgroundColor: Color(0xFF7BDAEB), // AppBar background color
+        backgroundColor: Colors.blue, // AppBar background color
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
@@ -281,7 +281,7 @@ class _ProgressReportScreenState extends State<ProgressReportScreen> {
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 120,
+                          width: 140,
                           child: Text(
                             skill,
                             style: TextStyle(fontSize: 16),
@@ -345,10 +345,10 @@ class _ProgressReportScreenState extends State<ProgressReportScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(entry.key, style: TextStyle(fontSize: 14)),
+                                Text(entry.key, style: TextStyle(fontSize: 16)),
                                 Text(
                                   '${entry.value['correct']}/${entry.value['total']}',
-                                  style: TextStyle(fontSize: 14),
+                                  style: TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),
