@@ -21,11 +21,11 @@ class MorningRoutineGameScreen extends StatefulWidget {
 class _MorningRoutineGameScreenState extends State<MorningRoutineGameScreen> {
   final List<String> images = [
     'assets/images/wake_up.png',
-    'assets/images/brush_teeth.png',
+    'assets/images/brush_teeth.jpeg',
     'assets/images/wash_face.png',
-    'assets/images/eat_breakfast.png',
-    'assets/images/pack_bag.png',
-    'assets/images/go_to_school.png',
+    'assets/images/eat_breakfast.jpeg',
+    'assets/images/pack_bag.jpeg',
+    'assets/images/go_to_school.jpeg',
   ];
 
   List<String?> userArrangement = [null, null, null, null, null, null];

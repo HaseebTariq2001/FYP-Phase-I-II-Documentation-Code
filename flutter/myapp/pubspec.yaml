@@ -105,15 +105,15 @@ flutter:
     - assets/images/cognitive_skills.png
     - assets/images/morning_routine.png
     - assets/images/going_to_school.png
-    - assets/videos/morning_routine.mp4
+   # - assets/videos/morning_routine.mp4
     - assets/videos/going_to_school_routine.mp4
     - assets/images/after_school_routine.png
     - assets/images/wake_up.png # 1st step of morning_routine
-    - assets/images/brush_teeth.png # 2nd step of ***************
+    - assets/images/brush_teeth.jpeg
     - assets/images/wash_face.png # 3rd step of ***************
-    - assets/images/eat_breakfast.png # 4th step of *************
-    - assets/images/pack_bag.png # 5th step of *************
-    - assets/images/go_to_school.png # 6th step of *************
+    - assets/images/eat_breakfast.jpeg
+    - assets/images/pack_bag.jpeg
+    - assets/images/go_to_school.jpeg
 
     - assets/images/wave_goodbye.png # 1st step of going_to_school_routine
     - assets/images/walk_to_the_bus_stop.png # 2nd step of ***************

@@ -910,6 +910,7 @@ import 'add_child_profile_screen.dart';
 import 'feedback_screen.dart';
 import 'home_screen.dart';
 import 'parent_profile_update.dart';
+import 'privacy_policy_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -1075,7 +1076,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.privacy_tip,
               title: 'Privacy Policy',
               trailingIcon: Icons.chevron_right,
-              onTap: () {},
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PrivacyPolicyScreen(),
+                    ),
+                  ),
             ),
           ],
         ),
