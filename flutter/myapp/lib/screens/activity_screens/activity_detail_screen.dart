@@ -5,8 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'activity_screen.dart';
 
 class ActivityDetailScreen extends StatefulWidget {
-  
-
   const ActivityDetailScreen(); // ✅ NEW
 
   @override
@@ -121,7 +119,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                 title: lessons[index]['title'],
                 skill: lessons[index]['skill'],
                 phrases: List<String>.from(lessons[index]['phrases']),
-                                     // ✅ NEW: pass lessonIndex
+                // ✅ NEW: pass lessonIndex
               ),
         ),
       ).then((_) async {

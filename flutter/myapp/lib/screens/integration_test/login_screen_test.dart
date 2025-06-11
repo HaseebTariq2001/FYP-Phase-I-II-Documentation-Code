@@ -7,7 +7,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Login & Create Account Integration Tests', () {
-    testWidgets('Register navigation and Login attempt', (WidgetTester tester) async {
+    testWidgets('Register navigation and Login attempt', (
+      WidgetTester tester,
+    ) async {
       app.main();
       await tester.pumpAndSettle();
 
@@ -24,29 +26,43 @@ void main() {
       expect(find.textContaining('Login Successful'), findsOneWidget);
     });
 
-    testWidgets('Navigate to create account screen', (WidgetTester tester) async {
+    testWidgets('Navigate to create account screen', (
+      WidgetTester tester,
+    ) async {
       app.main();
       await tester.pumpAndSettle();
 
-      final signUpLink = find.widgetWithText(TextButton, "Don't have an account? Sign up");
+      final signUpLink = find.widgetWithText(
+        TextButton,
+        "Don't have an account? Sign up",
+      );
 
       await tester.tap(signUpLink);
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(ElevatedButton, 'Create Account'), findsOneWidget);
+      expect(
+        find.widgetWithText(ElevatedButton, 'Create Account'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Register a new account', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle();
 
-      final signUpLink = find.widgetWithText(TextButton, "Don't have an account? Sign up");
+      final signUpLink = find.widgetWithText(
+        TextButton,
+        "Don't have an account? Sign up",
+      );
       await tester.tap(signUpLink);
       await tester.pumpAndSettle();
 
       final emailField = find.widgetWithText(TextFormField, 'Email');
       final passwordField = find.widgetWithText(TextFormField, 'Password');
-      final createButton = find.widgetWithText(ElevatedButton, 'Create Account');
+      final createButton = find.widgetWithText(
+        ElevatedButton,
+        'Create Account',
+      );
 
       await tester.enterText(emailField, 'newuser@example.com');
       await tester.enterText(passwordField, 'TestPass@123');
@@ -57,15 +73,23 @@ void main() {
       expect(find.textContaining('Account Created'), findsOneWidget);
     });
 
-    testWidgets('Child Profile creation validation', (WidgetTester tester) async {
+    testWidgets('Child Profile creation validation', (
+      WidgetTester tester,
+    ) async {
       app.main();
       await tester.pumpAndSettle();
 
       // Assuming we're now on ChildProfileScreen after login or account creation
-      final nameField = find.widgetWithText(TextFormField, "Child's Name/Username");
+      final nameField = find.widgetWithText(
+        TextFormField,
+        "Child's Name/Username",
+      );
       final passwordField = find.widgetWithText(TextFormField, 'Password');
       final ageField = find.byType(TextFormField).last;
-      final generateButton = find.widgetWithText(ElevatedButton, "Generate Child’s Login");
+      final generateButton = find.widgetWithText(
+        ElevatedButton,
+        "Generate Child’s Login",
+      );
 
       await tester.enterText(nameField, 'TestChild');
       await tester.enterText(passwordField, 'child123');
@@ -74,7 +98,10 @@ void main() {
       await tester.tap(generateButton);
       await tester.pump(const Duration(seconds: 2));
 
-      expect(find.textContaining('profile created successfully'), findsOneWidget);
+      expect(
+        find.textContaining('profile created successfully'),
+        findsOneWidget,
+      );
     });
   });
 }

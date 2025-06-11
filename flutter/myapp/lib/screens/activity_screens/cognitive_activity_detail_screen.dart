@@ -17,15 +17,17 @@ class _CognitiveActivityDetailScreenState
       'title': "Morning Routine Game",
       'skill': "Cognitive",
       'image': 'assets/images/morning_routine.png',
-      'screen': (String title, String skill) =>
-          MorningRoutineGameScreen(title: title, skill: skill),
+      'screen':
+          (String title, String skill) =>
+              MorningRoutineGameScreen(title: title, skill: skill),
     },
     {
       'title': "Going to School Routine",
       'skill': "Cognitive",
       'image': 'assets/images/going_to_school.png',
-      'screen': (String title, String skill) =>
-          GoingToSchoolRoutineGameScreen(title: title, skill: skill),
+      'screen':
+          (String title, String skill) =>
+              GoingToSchoolRoutineGameScreen(title: title, skill: skill),
     },
   ];
 
@@ -47,17 +49,20 @@ class _CognitiveActivityDetailScreenState
   void _handleActivityTap(int index) async {
     if (index >= unlockedRoutine) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please complete the corresponding routine first.")),
+        SnackBar(
+          content: Text("Please complete the corresponding routine first."),
+        ),
       );
     } else {
       if (activities[index]['screen'] != null) {
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => activities[index]['screen'](
-              activities[index]['title'],
-              activities[index]['skill'],
-            ),
+            builder:
+                (context) => activities[index]['screen'](
+                  activities[index]['title'],
+                  activities[index]['skill'],
+                ),
           ),
         );
       }
@@ -71,10 +76,7 @@ class _CognitiveActivityDetailScreenState
         title: const Text("Cognitive Activities"),
         backgroundColor: const Color.fromARGB(255, 161, 129, 216),
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -94,10 +96,12 @@ class _CognitiveActivityDetailScreenState
             elevation: 4,
             margin: EdgeInsets.only(bottom: 16),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-            color: isLocked
-                ? Colors.grey[200]
-                : const Color.fromARGB(255, 183, 58, 177),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            color:
+                isLocked
+                    ? Colors.grey[200]
+                    : const Color.fromARGB(255, 183, 58, 177),
             child: ListTile(
               contentPadding: EdgeInsets.all(12),
               leading: ClipRRect(
@@ -112,12 +116,14 @@ class _CognitiveActivityDetailScreenState
               title: Text(
                 "Activity ${index + 1}",
                 style: TextStyle(
-                    color: isLocked ? Colors.black54 : Colors.white),
+                  color: isLocked ? Colors.black54 : Colors.white,
+                ),
               ),
               subtitle: Text(
                 activity['title'],
                 style: TextStyle(
-                    color: isLocked ? Colors.black45 : Colors.white70),
+                  color: isLocked ? Colors.black45 : Colors.white70,
+                ),
               ),
               trailing: Icon(
                 isLocked ? Icons.lock_outline : Icons.play_arrow,

@@ -57,7 +57,7 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-
+  flutter_launcher_icons: ^0.13.1
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -65,6 +65,13 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/icon.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -105,7 +112,7 @@ flutter:
     - assets/images/cognitive_skills.png
     - assets/images/morning_routine.png
     - assets/images/going_to_school.png
-   # - assets/videos/morning_routine.mp4
+    # - assets/videos/morning_routine.mp4
     - assets/videos/going_to_school_routine.mp4
     - assets/images/after_school_routine.png
     - assets/images/wake_up.png # 1st step of morning_routine
