@@ -26,7 +26,7 @@ class _SelectChildScreenState extends State<SelectChildScreen> {
   Future<void> fetchChildren() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.10:8000/child_list'),
+        Uri.parse('https://educare-backend-9nb1.onrender.com/child_list'),
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -54,7 +54,7 @@ class _SelectChildScreenState extends State<SelectChildScreen> {
   Future<void> deleteChild(String name) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://192.168.1.10:8000/child/$name'),
+        Uri.parse('https://educare-backend-9nb1.onrender.com/child/$name'),
       );
       if (response.statusCode == 200) {
         setState(() {

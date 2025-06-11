@@ -48,7 +48,9 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
   Future<void> fetchChildData() async {
     // Modified: Fetch specific child data using the childName parameter
     final response = await http.get(
-      Uri.parse('http://192.168.1.10:8000/child/${widget.childName}'),
+      Uri.parse(
+        'https://educare-backend-9nb1.onrender.com/child/${widget.childName}',
+      ),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -74,7 +76,9 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
 
     // Modified: Update specific child using the childName
     final response = await http.put(
-      Uri.parse('http://192.168.1.10:8000/child/${widget.childName}'),
+      Uri.parse(
+        'https://educare-backend-9nb1.onrender.com/child/${widget.childName}',
+      ),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': _nameController.text,
@@ -115,55 +119,58 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white), // added for icon
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage:
-                      imageData != null ? MemoryImage(imageData!) : null,
-                  backgroundColor: Colors.grey[300],
-                  child:
-                      imageData == null ? Icon(Icons.person, size: 60) : null,
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 4,
-                  child: InkWell(
-                    onTap: pickImage,
-                    child: CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.edit, size: 16, color: Colors.white),
+      body: SingleChildScrollView(
+        // Added: Wrap Column with SingleChildScrollView to handle overflow by making content scrollable
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundImage:
+                        imageData != null ? MemoryImage(imageData!) : null,
+                    backgroundColor: Colors.grey[300],
+                    child:
+                        imageData == null ? Icon(Icons.person, size: 60) : null,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 4,
+                    child: InkWell(
+                      onTap: pickImage,
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.blue,
+                        child: Icon(Icons.edit, size: 16, color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            _buildEditableField(
-              'Child Name',
-              _nameController,
-              Icons.person_outline,
-            ),
-            _buildEditableFieldWithEye(
-              'Password',
-              _passwordController,
-              Icons.lock_outline,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: updateProfile,
-              child: Text('Update Profile'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+                ],
               ),
-            ),
-          ],
+              SizedBox(height: 20),
+              _buildEditableField(
+                'Child Name',
+                _nameController,
+                Icons.person_outline,
+              ),
+              _buildEditableFieldWithEye(
+                'Password',
+                _passwordController,
+                Icons.lock_outline,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: updateProfile,
+                child: Text('Update Profile'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

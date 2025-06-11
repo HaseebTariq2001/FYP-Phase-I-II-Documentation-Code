@@ -28,7 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final response = await http.post(
         // Uri.parse('http://100.64.32.53:8000/chat'), // (mob_emulator)
-        Uri.parse('http://192.168.1.10:8000/chat'), //(chrome)
+        Uri.parse('https://educare-backend-9nb1.onrender.com/chat'), //(chrome)
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'message': input}),
       );

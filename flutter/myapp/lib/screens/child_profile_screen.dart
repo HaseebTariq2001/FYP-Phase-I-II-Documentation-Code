@@ -61,7 +61,7 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
 
       try {
         final response = await http.post(
-          Uri.parse("http://192.168.1.10:8000/api/add_child"),
+          Uri.parse("https://educare-backend-9nb1.onrender.com/api/add_child"),
           // Uri.parse("http://127.0.0.1:8000/api/add_child"),
           //  Uri.parse("http://100.64.32.53:8000/api/add_child"),
           headers: {"Content-Type": "application/json"},

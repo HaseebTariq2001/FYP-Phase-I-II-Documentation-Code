@@ -1,3 +1,6 @@
+// new code with restricitons
+
+// ignore_for_file: unused_element_parameter
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -129,7 +132,7 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
     final total = emotions.length;
 
     await http.post(
-      Uri.parse('http://192.168.1.10:8000/api/save-activity'),
+      Uri.parse('https://educare-backend-9nb1.onrender.com/api/save-activity'),
       // Uri.parse('http://100.64.64.88:8000/api/save-activity'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
@@ -250,6 +253,10 @@ class _EmotionSortingScreenState extends State<EmotionSortingScreen>
     List<String> currentList,
   ) {
     return DragTarget<String>(
+      onWillAccept:
+          (data) =>
+              currentList.length <
+              3, // Added: Check if currentList has less than 3 items to restrict dragging
       onAccept: (data) => _handleDrop(data, targetBox),
       builder:
           (context, candidateData, rejectedData) => Container(
